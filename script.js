@@ -193,6 +193,78 @@ document.addEventListener('DOMContentLoaded', () => {
     vpObserver.observe(el);
   });
 
+
+
+  /* ── Pillar cards — stagger de entrada separado ── */
+  const pillarObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        pillarObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.pillar-card').forEach((card, i) => {
+    card.classList.add('anim-stagger');
+    card.style.transitionDelay = `${i * 80}ms`;
+    pillarObserver.observe(card);
+  });
+
+  /* ── Pillar cards — efeito dock estilo Apple ── */
+  const pillarsGrid = document.querySelector('.pillars-grid');
+  const pillarCards = document.querySelectorAll('.pillar-card');
+
+  if (pillarsGrid && window.innerWidth >= 1024) {
+    let leaveTimer = null;
+
+    pillarCards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        /* Cancela timer de saída se ainda estiver pendente */
+        if (leaveTimer) {
+          clearTimeout(leaveTimer);
+          leaveTimer = null;
+        }
+
+        /* Ativa o grid e troca o card ativo em uma operação — sem reset intermediário */
+        pillarsGrid.classList.add('has-hover');
+        pillarCards.forEach(c => c.classList.remove('is-active'));
+        card.classList.add('is-active');
+      });
+
+      card.addEventListener('mouseleave', (e) => {
+        /* Verifica se o mouse foi para outro card */
+        const toElement = e.relatedTarget;
+        const goingToCard = toElement && toElement.closest('.pillar-card');
+
+        if (!goingToCard) {
+          /* Mouse saiu do grid inteiro — aguarda um frame para evitar flicker */
+          leaveTimer = setTimeout(() => {
+            pillarsGrid.classList.remove('has-hover');
+            pillarCards.forEach(c => c.classList.remove('is-active'));
+            leaveTimer = null;
+          }, 80);
+        }
+      });
+    });
+
+    /* Saída do grid completo */
+    pillarsGrid.addEventListener('mouseleave', () => {
+      leaveTimer = setTimeout(() => {
+        pillarsGrid.classList.remove('has-hover');
+        pillarCards.forEach(c => c.classList.remove('is-active'));
+        leaveTimer = null;
+      }, 80);
+    });
+
+    pillarsGrid.addEventListener('mouseenter', () => {
+      if (leaveTimer) {
+        clearTimeout(leaveTimer);
+        leaveTimer = null;
+      }
+    });
+  }
+
   /* ── FAQ accordion ── */
   document.querySelectorAll('.faq-question').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -281,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
   sections.forEach(section => {
     const animEls = section.querySelectorAll(
       'h1, h2, h3, p.eyebrow, .section-eyebrow, .hero-desc, .section-sub, ' +
-      '.pillar-card, .trust-item, .metric-item, .city-headline, .city-body, ' +
+      '.trust-item, .metric-item, .city-headline, .city-body, ' +
       '.testimonial-card, .checklist li, .hero-ctas, .btn-cta, .btn-cta-full, ' +
       '.consultant-content h2, .consultant-content p, .consultant-meta, ' +
       '.lead-form-info h2, .lead-form-info p, form, ' +

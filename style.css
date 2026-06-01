@@ -369,20 +369,20 @@ nav a:hover { color: var(--foreground); }
 
 .trust-check {
   flex-shrink: 0;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
   color: var(--brand);
 }
 
 .trust-value {
   font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: 1.8rem;
+  font-weight: 600;
   color: var(--ink);
 }
 
 .trust-label {
   margin-top: 0.25rem;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: color-mix(in oklab, var(--foreground) 60%, transparent);
@@ -431,38 +431,69 @@ nav a:hover { color: var(--foreground); }
 .pillars-grid {
   display: grid;
   gap: 0;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  overflow: hidden;
+  border: 1px solid #d4d0c9;
+  border-radius: 0;
+  overflow: visible;
+  background: none;
 }
 
 @media (min-width: 1024px) {
-  .pillars-grid { grid-template-columns: repeat(3, 1fr); }
+  .pillars-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .pillar-card {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  background-color: var(--background);
   padding: 2rem;
-  transition: background-color 0.15s;
+  background-color: #f4f3f0;
+  border: none;
+  outline: none;
+  border-radius: 0;
+  position: relative;
+  z-index: 1;
+  /* box-shadow simula borda animável sem afetar layout */
+  box-shadow: inset 0 0 0 1px #d4d0c9;
+  transition:
+    box-shadow 0.45s ease,
+    background-color 0.4s ease;
 }
 
-/* mobile: empilhado — divisória horizontal entre cards */
-.pillar-card + .pillar-card {
-  border-top: 1px solid var(--border);
+.pillar-icon {
+  transition: color 0.5s ease;
 }
 
-/* desktop: lado a lado — divisória vertical entre cards */
-@media (min-width: 1024px) {
-  .pillar-card + .pillar-card {
-    border-top: none;
-    border-left: 1px solid var(--border);
+/* Mobile: empilhado, sem efeito */
+@media (max-width: 1023px) {
+  .pillars-grid {
+    border: 1px solid var(--border);
+  }
+
+  .pillar-card {
+    background-color: var(--background);
+    outline: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pillar-card:last-child {
+    border-bottom: none;
   }
 }
 
-.pillar-card:hover { background-color: var(--card); }
+/* Desktop — hover: outline muda cor e espessura, sem tilt, sem mover layout */
+@media (min-width: 1024px) {
+  .pillar-card.is-active {
+    background-color: #ffffff;
+    box-shadow: inset 0 0 0 3px #d9602da6;
+    z-index: 10;
+  }
+
+  .pillar-card.is-active .pillar-icon {
+    color: var(--cta);
+  }
+}
 
 .pillar-card-top {
   display: flex;
@@ -723,8 +754,9 @@ nav a:hover { color: var(--foreground); }
   margin-top: 2.5rem;
   padding-top: 2rem;
   border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 2rem;
   max-width: 28rem;
 }
@@ -734,13 +766,15 @@ nav a:hover { color: var(--foreground); }
   font-size: 1.5rem;
   font-weight: 500;
   color: var(--ink);
+  line-height: 1.1;
 }
 
 .consultant-creci-label {
-  margin-top: 0.25rem;
+  margin-top: 0.1rem;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   color: color-mix(in oklab, var(--foreground) 55%, transparent);
+  line-height: 1.2;
 }
 
 .btn-text-link {
@@ -1493,4 +1527,44 @@ svg { display: inline-block; vertical-align: middle; }
 .mobile-ctrl-btn:active {
   transform: scale(0.9);
   background: rgba(0, 0, 0, 0.75);
+}
+
+/* Logo — subtítulo header e footer */
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.logo-sub {
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: color-mix(in oklab, var(--foreground) 72%, transparent);
+  line-height: 1;
+}
+
+.footer-brand-sub {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: color-mix(in oklab, var(--background) 45%, transparent);
+  margin-top: 1px;
+}
+
+/* Botão header — texto responsivo */
+.btn-header-short { display: none; }
+.btn-header-full  { display: inline; }
+
+@media (max-width: 416px) {
+  .btn-header-short { display: inline; }
+  .btn-header-full  { display: none; }
+}
+
+/* City tabs — padding reduzido em telas muito pequenas */
+@media (max-width: 410px) {
+  .city-tab {
+    padding-inline: 0.9rem;
+  }
 }
