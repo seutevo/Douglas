@@ -10,6 +10,7 @@
 
 :root {
   --radius: 0.25rem;
+  --radius-md: 0.35rem;
   --background: oklch(96.5% .005 90);
   --foreground: oklch(22% .04 250);
   --sand: oklch(89.5% .015 80);
@@ -257,7 +258,7 @@ nav a:hover { color: var(--foreground); }
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   color: var(--cta-foreground);
   border-radius: var(--radius);
   transition: transform 0.15s, box-shadow 0.15s;
@@ -265,6 +266,7 @@ nav a:hover { color: var(--foreground); }
 }
 
 @media (min-width: 640px) { .btn-cta { width: auto; } }
+@media (max-width: 415px) { .btn-cta { gap: 0.3rem; padding-inline: 0.1rem; } }
 
 .btn-cta:hover {
   transform: translateY(-1px);
@@ -678,14 +680,14 @@ nav a:hover { color: var(--foreground); }
   width: 100%;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   border-radius: var(--radius);
   background-color: var(--cta);
-  padding-inline: 1.75rem;
+  padding-inline: 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   color: var(--cta-foreground);
   transition: transform 0.15s, box-shadow 0.15s;
 }
@@ -744,10 +746,10 @@ nav a:hover { color: var(--foreground); }
 }
 
 .consultant-content p {
-  margin-top: 1.75rem;
-  font-size: 1rem;
-  line-height: 1.75;
-  color: color-mix(in oklab, var(--foreground) 70%, transparent);
+	margin-top: 0.65rem;
+	font-size: 1rem;
+	line-height: 1.75;
+	color: color-mix(in oklab, var(--foreground) 70%, transparent);
 }
 
 .consultant-meta {
@@ -828,7 +830,7 @@ nav a:hover { color: var(--foreground); }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   border: 1px solid color-mix(in oklab, var(--background) 10%, transparent);
   background-color: color-mix(in oklab, var(--background) 3%, transparent);
   padding: 2rem;
@@ -841,7 +843,7 @@ nav a:hover { color: var(--foreground); }
 .testimonial-card blockquote {
   margin-top: 1.5rem;
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 400;
   line-height: 1.4;
   color: color-mix(in oklab, var(--background) 90%, transparent);
@@ -861,19 +863,22 @@ nav a:hover { color: var(--foreground); }
   width: 2.5rem;
   border-radius: 999px;
   background-color: color-mix(in oklab, var(--background) 10%, transparent);
+  background-repeat: no-repeat; background-size: cover; background-position: center;
   flex-shrink: 0;
 }
 
 .testimonial-name {
-  font-family: var(--font-display);
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--background);
+	font-family: var(--font-display);
+	font-size: 0.95rem;
+	font-weight: 500;
+	font-kerning: normal;
+	color: var(--background);
 }
 
 .testimonial-role {
-  font-size: 0.75rem;
-  color: color-mix(in oklab, var(--background) 55%, transparent);
+	font-size: 0.8rem;
+	font-kerning: normal;
+	color: color-mix(in oklab, var(--background) 55%, transparent);
 }
 
 /* ============================================================
@@ -932,6 +937,7 @@ form {
 }
 
 @media (min-width: 1024px) { form { padding: 2.5rem; } }
+@media (max-width: 432px) { form { padding: 1rem; } }
 
 .form-grid {
   display: grid;
@@ -1207,7 +1213,8 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  font-size: 11px;
+  font-size: 12px;
+  font-kerning: normal;
   color: color-mix(in oklab, var(--background) 45%, transparent);
 }
 
@@ -1216,6 +1223,7 @@ footer {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+	font-kerning: normal;
   }
 }
 
@@ -1567,4 +1575,256 @@ svg { display: inline-block; vertical-align: middle; }
   .city-tab {
     padding-inline: 0.9rem;
   }
+}
+
+/* ============================================================
+   CARROSSEL — CIDADES
+   ============================================================ */
+
+.city-img-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  aspect-ratio: 16/11;
+}
+
+/* Slides — empilhados, só o ativo visível */
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.carousel-slide.active {
+  opacity: 1;
+  pointer-events: auto;
+  position: relative;
+}
+
+/* Controles — barra inferior */
+.carousel-controls {
+  position: absolute;
+  bottom: 0.875rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  z-index: 2;
+}
+
+/* Botões prev/next */
+.carousel-btn {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: white;
+  border: none;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.carousel-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.carousel-btn:active {
+  transform: scale(0.92);
+}
+
+/* Dots */
+.carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, width 0.3s ease;
+}
+
+.carousel-dot.active {
+  background: white;
+  width: 18px;
+}
+
+/* ============================================================
+   CARROSSEL — CONSULTOR
+   ============================================================ */
+
+/* O consultant-img-wrap já tem position: relative via .consultant-img-wrap img */
+.consultant-img-wrap {
+  position: relative;
+}
+
+.consultant-img-wrap .carousel-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 4/5;
+  border-radius: var(--radius);
+}
+
+.consultant-img-wrap .carousel-slide.active {
+  position: relative;
+}
+
+/* Controles posicionados sobre a imagem */
+.consultant-img-wrap .carousel-controls {
+  bottom: 1.25rem;
+}
+
+/* ============================================================
+   MODAL — ÁGUIA CONSULTORIA IMOBILIÁRIA
+   ============================================================ */
+
+.aguia-link {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.aguia-link:hover { color: var(--brand-soft); }
+
+/* Overlay */
+.aguia-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(14, 27, 44, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.aguia-modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Caixa do modal */
+.aguia-modal-box {
+  position: relative;
+  background: #ffffff;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 36rem;
+  overflow: hidden;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.3s ease;
+  opacity: 0;
+  box-shadow: 0 32px 80px -16px rgba(14, 27, 44, 0.35);
+}
+
+.aguia-modal-overlay.open .aguia-modal-box {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Botão fechar */
+.aguia-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(14, 27, 44, 0.08);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  z-index: 2;
+}
+
+.aguia-modal-close:hover { background: #254165; }
+
+/* Logo — fundo azul da marca */
+.aguia-modal-logo-wrap {
+  background-color: #0c2d47;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aguia-modal-logo {
+  height: 12rem;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Conteúdo */
+.aguia-modal-content {
+  padding: 2rem 2.5rem 2.5rem;
+}
+
+.aguia-modal-eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--cta);
+  margin-bottom: 0.6rem;
+}
+
+.aguia-modal-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.25rem;
+}
+
+.aguia-modal-body {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: color-mix(in oklab, var(--foreground) 70%, transparent);
+  margin-bottom: 1.5rem;
+}
+
+.aguia-modal-creci {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }

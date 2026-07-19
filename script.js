@@ -275,6 +275,60 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+
+  /* ── Carrossel de imagens por cidade ── */
+  const AUTOPLAY_DELAY = 3500;
+
+  document.querySelectorAll('[data-carousel]').forEach(wrap => {
+    const slides = wrap.querySelectorAll('.carousel-slide');
+    const dots   = wrap.querySelectorAll('.carousel-dot');
+    const prev   = wrap.querySelector('.carousel-prev');
+    const next   = wrap.querySelector('.carousel-next');
+    let current  = 0;
+    let timer    = null;
+
+    function goTo(index) {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = (index + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      timer = setInterval(() => goTo(current + 1), AUTOPLAY_DELAY);
+    }
+
+    function stopAutoplay() {
+      if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    /* Autoplay pausa quando o carrossel sai do viewport */
+    const cityPanel = wrap.closest('.city-panel');
+    const observeTarget = cityPanel || wrap;
+    const panelObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => e.isIntersecting ? startAutoplay() : stopAutoplay());
+    }, { threshold: 0.2 });
+    panelObserver.observe(observeTarget);
+
+    /* Setas */
+    prev.addEventListener('click', () => { goTo(current - 1); startAutoplay(); });
+    next.addEventListener('click', () => { goTo(current + 1); startAutoplay(); });
+
+    /* Dots */
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => { goTo(i); startAutoplay(); });
+    });
+
+    /* Pausa no hover */
+    wrap.addEventListener('mouseenter', stopAutoplay);
+    wrap.addEventListener('mouseleave', startAutoplay);
+
+    /* Para city-panel: inicia só se ativo. Para outros (consultor): deixa o observer decidir */
+    if (cityPanel && !cityPanel.classList.contains('active')) stopAutoplay();
+  });
+
   /* ── City tabs com slider ── */
   const tabsContainer = document.querySelector('.city-tabs');
   const slider = document.querySelector('.city-tabs-slider');
@@ -301,11 +355,45 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.city-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.city-panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
-      document.getElementById('city-' + target).classList.add('active');
+      const activePanel = document.getElementById('city-' + target);
+      activePanel.classList.add('active');
       moveSlider(tab);
+      /* Inicia autoplay do carrossel da aba recém-ativada */
+      const carousel = activePanel.querySelector('[data-carousel]');
+      if (carousel) carousel.dispatchEvent(new Event('mouseleave'));
     });
   });
 
+
+
+  /* ── Modal Águia Consultoria ── */
+  const aguiaModal    = document.getElementById('aguia-modal');
+  const aguiaTrigger  = document.getElementById('aguia-modal-trigger');
+  const aguiaClose    = document.getElementById('aguia-modal-close');
+
+  function openAguiaModal(e) {
+    e.preventDefault();
+    aguiaModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeAguiaModal() {
+    aguiaModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (aguiaTrigger) aguiaTrigger.addEventListener('click', openAguiaModal);
+  if (aguiaClose)   aguiaClose.addEventListener('click', closeAguiaModal);
+
+  /* Fecha ao clicar no overlay */
+  aguiaModal.addEventListener('click', (e) => {
+    if (e.target === aguiaModal) closeAguiaModal();
+  });
+
+  /* Fecha com ESC */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && aguiaModal.classList.contains('open')) closeAguiaModal();
+  });
 
   /* ── Cookie Banner (LGPD) ── */
   const cookieBanner = document.getElementById('cookie-banner');
