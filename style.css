@@ -261,16 +261,20 @@ nav a:hover { color: var(--foreground); }
   letter-spacing: 0.16em;
   color: var(--cta-foreground);
   border-radius: var(--radius);
-  transition: transform 0.15s, box-shadow 0.15s;
   width: 100%;
+  transition: 
+    background-color 0.5s ease, 
+    box-shadow 0.5s ease, 
+    opacity 0.35s ease, 
+    transform 0.35s ease;
 }
 
 @media (min-width: 640px) { .btn-cta { width: auto; } }
 @media (max-width: 415px) { .btn-cta { gap: 0.3rem; padding-inline: 0.1rem; } }
 
 .btn-cta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 30px -12px color-mix(in oklab, var(--cta) 55%, transparent);
+  box-shadow: 0 12px 8px -12px color-mix(in oklab, var(--brand-soft) 55%, transparent);
+  background-color: color-mix(in oklab, var(--cta) 95%, black);
 }
 
 .btn-ghost {
@@ -711,23 +715,31 @@ nav a:hover { color: var(--foreground); }
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--cta-foreground);
-  transition: transform 0.15s, box-shadow 0.15s;
+  
+  transition: 
+    background-color 0.5s ease, 
+    box-shadow 0.5s ease, 
+    opacity 0.35s ease, 
+    transform 0.35s ease;
 }
 
 .btn-cta-full:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 30px -12px color-mix(in oklab, var(--cta) 55%, transparent);
+  box-shadow: 0 12px 8px -12px color-mix(in oklab, var(--brand-soft) 55%, transparent);
+  background-color: color-mix(in oklab, var(--cta) 95%, black);
+  
+  /* REMOVIDO: A linha de transição daqui foi apagada */
 }
+
 
 /* ============================================================
    CONSULTANT
    ============================================================ */
-.consultant { padding-block: 4.5rem; }
+.consultant { padding-block: 4rem; }
 @media (min-width: 1024px) { .consultant { padding-block: 8rem; } }
 
 .consultant-inner {
   display: grid;
-  gap: 3rem;
+  gap: 1.2rem;
 }
 
 @media (min-width: 1024px) {
@@ -1027,7 +1039,7 @@ form {
 /* ============================================================
    FAQ
    ============================================================ */
-.faq { padding-block: 4rem; }
+.faq { padding-block: 3.5rem; }
 @media (min-width: 1024px) { .faq { padding-block: 8rem; } }
 
 .faq-inner {
