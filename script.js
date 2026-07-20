@@ -194,7 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-
   /* ── Pillar cards — stagger de entrada separado ── */
   const pillarObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
