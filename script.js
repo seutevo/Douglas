@@ -193,6 +193,66 @@ document.addEventListener('DOMContentLoaded', () => {
     vpObserver.observe(el);
   });
 
+  
+
+/* NEW FORM INTEGRAÇÃO */
+
+document.addEventListener('DOMContentLoaded', () => {
+  const leadForm = document.getElementById('lead-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const formFeedback = document.getElementById('form-feedback');
+
+  if (!leadForm) return;
+
+  leadForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Desabilita botão e feedback visual de envio
+    submitBtn.disabled = true;
+    const btnText = submitBtn.querySelector('span');
+    if (btnText) btnText.textContent = 'Enviando...';
+
+    // Coleta todos os campos exatamente como mapeados no seu HTML
+    const payload = {
+      nome: document.getElementById('nome').value,
+      email: document.getElementById('email').value,
+      whatsapp: document.getElementById('whatsapp').value,
+      perfil: document.getElementById('perfil').value,
+      mensagem: document.getElementById('mensagem').value,
+      form_location: document.getElementById('form_location').value,
+      source_page: window.location.href,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      // Substitua pela URL do seu Webhook no Make.com
+      const WEBHOOK_URL = 'https://hook.us2.make.com/6j3hlkp3pb9if1g3xotmo9snp3vhlvu3';
+
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        // Esconde o formulário e exibe o container de sucesso no mesmo lugar
+        leadForm.classList.add('hidden');
+        formFeedback.classList.remove('hidden');
+      } else {
+        throw new Error('Falha no envio');
+      }
+    } catch (error) {
+      console.error('Erro no envio:', error);
+      alert('Ocorreu um erro ao enviar suas informações. Por favor, tente novamente.');
+      
+      // Restaura o botão em caso de falha
+      submitBtn.disabled = false;
+      if (btnText) btnText.textContent = 'Quero falar com o consultor';
+    }
+  });
+});
+	  
+	  
 
   /* ── Pillar cards — stagger de entrada separado ── */
   const pillarObserver = new IntersectionObserver((entries) => {

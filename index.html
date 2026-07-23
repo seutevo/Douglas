@@ -420,7 +420,22 @@
           <p class="section-eyebrow">O Corretor</p>
           <h2>Douglas Carneiro, consultor estratégico no <span class="soft">Litoral Norte.</span></h2>
           <p style="padding-top: 1.25rem;">Sou Douglas Carneiro, corretor especializado em consultoria e curadoria imobiliária no mercado catarinense. Em parceria com construtoras consolidadas, recomendo ativos baseados em análise de dados, forte rentabilidade e total segurança jurídica.</p>
-          <p style="padding-top: 1.25rem;">Atendo um número restrito de clientes por vez para garantir um acompanhamento exclusivo da escolha do imóvel à entrega das chaves, contando com a expertise e a confiança da <span style="font-weight: bold"><a href="#" id="aguia-modal-trigger" class="aguia-link">Águia Consultoria Imobiliária.</a></span></p>
+          <p style="padding-top: 1.25rem;">
+  Atendo um número restrito de clientes por vez para garantir um acompanhamento exclusivo da escolha do imóvel à entrega das chaves, contando com a expertise e a confiança da 
+  <span class="link-container">
+  <a href="#" id="aguia-modal-trigger" class="aguia-link">
+    Águia Consultoria Imobiliária.
+    <!-- Ícone de seta adicionado aqui -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-icon"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+  </a>
+  
+  <span class="meu-popover">
+    <img src="imagens/aguia-logo-sm.png" alt="Águia logo" class="popover-img">
+    <span class="popover-texto">Saiba mais!</span>
+  </span>
+</span>
+
+</p>
           <div class="consultant-meta">
             <div>
               <p class="consultant-creci">CRECI-SC 70391-F</p>
@@ -476,7 +491,7 @@
     </section>
 
     <!-- ============================================================
-         FORMULÁRIO
+        FORMULÁRIO
     ============================================================ -->
     <section id="contato" class="lead-form">
       <div class="container lead-form-inner">
@@ -501,29 +516,33 @@
           </ul>
         </div>
 
-        <form onsubmit="return false;">
+        <!-- FORMULÁRIO PRINCIPAL -->
+        <form id="lead-form">
+          <!-- Campo oculto para rastreamento de origem -->
+          <input type="hidden" name="form_location" id="form_location" value="section_footer" />
+
           <div class="form-grid">
             <div class="field">
               <label for="nome">Nome completo</label>
-              <input id="nome" name="nome" type="text" placeholder="Como devemos chamá-lo" />
+              <input id="nome" name="nome" type="text" placeholder="Como devemos chamá-lo" required />
             </div>
             <div class="field">
               <label for="email">E-mail para contato</label>
-              <input id="email" name="email" type="email" placeholder="Seu melhor e-mail" />
+              <input id="email" name="email" type="email" placeholder="Seu melhor e-mail" required />
             </div>
             <div class="field">
               <label for="whatsapp">WhatsApp (com DDD)</label>
-              <input id="whatsapp" name="whatsapp" type="text" placeholder="(11) 99999-0000" />
+              <input id="whatsapp" name="whatsapp" type="text" placeholder="(11) 99999-0000" required />
             </div>
             <div class="field">
               <label for="perfil">Perfil de investidor</label>
               <div class="select-wrap">
                 <select id="perfil" name="perfil">
-                  <option>Selecione...</option>
-                  <option>Até R$ 500 mil</option>
-                  <option>R$ 500 mil – R$ 1,5 Mi</option>
-                  <option>R$ 1,5 Mi – R$ 5 Mi</option>
-                  <option>Acima de R$ 5 Mi</option>
+                  <option value="">Selecione...</option>
+                  <option value="Até R$ 500 mil">Até R$ 500 mil</option>
+                  <option value="R$ 500 mil – R$ 1,5 Mi">R$ 500 mil – R$ 1,5 Mi</option>
+                  <option value="R$ 1,5 Mi – R$ 5 Mi">R$ 1,5 Mi – R$ 5 Mi</option>
+                  <option value="Acima de R$ 5 Mi">Acima de R$ 5 Mi</option>
                 </select>
                 <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
               </div>
@@ -533,12 +552,23 @@
               <textarea id="mensagem" name="mensagem" rows="3" placeholder="Conte brevemente seu objetivo de investimento"></textarea>
             </div>
           </div>
-          <button type="submit" class="btn-cta" style="margin-top:2rem;">
-            Quero falar com o consultor
+
+          <button type="submit" id="submit-btn" class="btn-cta" style="margin-top:2rem;">
+            <span>Quero falar com o consultor</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
+          
           <p class="form-disclaimer">Seus dados são tratados com sigilo absoluto. Não compartilhamos informações com terceiros.</p>
         </form>
+
+        <!-- CONTAINER DE MENSAGEM DE SUCESSO (Inicialmente oculto) -->
+        <div id="form-feedback" class="form-feedback-success hidden">
+          <div class="feedback-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h3>Solicitação enviada com sucesso!</h3>
+          <p>Obrigado pelo interesse. Em breve um de nossos consultores especializados entrará em contato via WhatsApp com o portfólio exclusivo.</p>
+        </div>
 
       </div>
     </section>
