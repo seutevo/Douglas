@@ -197,41 +197,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* NEW FORM INTEGRAÇÃO */
 
-JavaScript
-const form = document.querySelector('form'); // Ajuste o seletor para o ID do seu formulário, se houver
+/* ── Integração Formulário com Make ── */
+const leadForm = document.getElementById('lead-form');
+const formFeedback = document.getElementById('form-feedback');
 
-form.addEventListener('submit', async function (e) {
-  e.preventDefault(); // Impede o reload da página
+if (leadForm) {
+  leadForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-  // Captura os dados do formulário
-  const formData = new FormData(form);
-  const data = Object.fromEntries(formData.entries());
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) submitBtn.disabled = true;
 
-  // URL do seu Webhook Customizado no Make
-  const webhookUrl = 'https://hook.us2.make.com/6j3hlkp3pb9if1g3xotmo9snp3vhlvu3';
+    const formData = new FormData(leadForm);
+    const data = Object.fromEntries(formData.entries());
+    const webhookUrl = 'https://hook.us2.make.com/02vrpz1tcsr477ybqpwe98vhhv7dq3ve';
 
-  try {
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-    if (response.ok) {
-      // Exiba aqui a mensagem de sucesso ou modal
-      alert('Contato enviado com sucesso!');
-      form.reset();
-    } else {
-      console.error('Erro na resposta do webhook:', response.statusText);
-      alert('Houve um problema no envio. Tente novamente.');
+      if (response.ok) {
+        leadForm.style.display = 'none';
+        if (formFeedback) formFeedback.classList.remove('hidden');
+        leadForm.reset();
+      } else {
+        console.error('Erro no webhook:', response.statusText);
+        alert('Houve um problema no envio. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Erro de conexão:', error);
+      alert('Erro de conexão. Tente novamente mais tarde.');
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
     }
-  } catch (error) {
-    console.error('Erro ao enviar para o Make:', error);
-    alert('Erro de conexão. Tente novamente mais tarde.');
-  }
-});
+  });
+}
 	  
 	  
 	  
