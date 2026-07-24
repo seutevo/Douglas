@@ -411,33 +411,62 @@ if (leadForm) {
 
 
   /* ── Modal Águia Consultoria ── */
-  const aguiaModal    = document.getElementById('aguia-modal');
-  const aguiaTrigger  = document.getElementById('aguia-modal-trigger');
-  const aguiaClose    = document.getElementById('aguia-modal-close');
+const aguiaModal   = document.getElementById('aguia-modal');
+const aguiaTrigger = document.getElementById('aguia-modal-trigger');
+const aguiaClose   = document.getElementById('aguia-modal-close');
 
-  function openAguiaModal(e) {
-    e.preventDefault();
-    aguiaModal.classList.add('open');
-    document.body.style.overflow = 'hidden';
+// 1. Função para ABRIR o modal e criar o estado no histórico
+function openAguiaModal(e) {
+  if (e) e.preventDefault();
+  
+  aguiaModal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Adiciona o estado temporário no histórico de navegação
+  history.pushState({ aguiaModalOpen: true }, '');
+}
+
+// 2. Função pura para OCULTAR visualmente o modal da tela
+function hideAguiaModal() {
+  aguiaModal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// 3. Função acionada ao fechar por Botão X, Overlay ou Tecla ESC
+function closeAguiaModal() {
+  // Se o estado ainda está no histórico, recuamos via JS (isso dispara o evento 'popstate')
+  if (history.state && history.state.aguiaModalOpen) {
+    history.back();
+  } else {
+    hideAguiaModal();
   }
+}
 
-  function closeAguiaModal() {
-    aguiaModal.classList.remove('open');
-    document.body.style.overflow = '';
-  }
+/* Eventos de Abertura e Fechamento Direto */
+if (aguiaTrigger) aguiaTrigger.addEventListener('click', openAguiaModal);
+if (aguiaClose)   aguiaClose.addEventListener('click', closeAguiaModal);
 
-  if (aguiaTrigger) aguiaTrigger.addEventListener('click', openAguiaModal);
-  if (aguiaClose)   aguiaClose.addEventListener('click', closeAguiaModal);
-
-  /* Fecha ao clicar no overlay */
+/* Fecha ao clicar no overlay (fundo escuro) */
+if (aguiaModal) {
   aguiaModal.addEventListener('click', (e) => {
     if (e.target === aguiaModal) closeAguiaModal();
   });
+}
 
-  /* Fecha com ESC */
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && aguiaModal.classList.contains('open')) closeAguiaModal();
-  });
+/* Fecha com a tecla ESC no Desktop */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && aguiaModal.classList.contains('open')) {
+    closeAguiaModal();
+  }
+});
+
+/* 4. CAPTURA DO BOTÃO "VOLTAR" / GESTO MOBILE */
+window.addEventListener('popstate', () => {
+  if (aguiaModal.classList.contains('open')) {
+    hideAguiaModal();
+  }
+});
+
 
   /* ── Cookie Banner (LGPD) ── */
   const cookieBanner = document.getElementById('cookie-banner');
