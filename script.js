@@ -579,33 +579,60 @@ window.addEventListener('resize', () => {
     track.closest('.testimonials-carousel').addEventListener('mouseenter', stopAutoplay);
     track.closest('.testimonials-carousel').addEventListener('mouseleave', startAutoplay);
 
-    /* Swipe mobile */
+    /* Swipe mobile com movimento em tempo real */
     let touchStartX = 0;
     let touchStartY = 0;
+    let isDragging = false;
 
     track.addEventListener('touchstart', (e) => {
+      stopAutoplay();
+      isDragging = true;
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
+      // Desativa transições para o card colar no dedo instantaneamente
+      cards.forEach(c => c.style.transition = 'none');
+    }, { passive: true });
+
+    track.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+
+      // Se o usuário puxar mais para cima/baixo, prioriza o scroll da página
+      if (Math.abs(dy) > Math.abs(dx)) return;
+
+      const left   = (current - 1 + TOTAL) % TOTAL;
+      const center = current;
+      const right  = (current + 1) % TOTAL;
+
+      // Move levemente os cards principais acompanhando o arraste horizontal
+      const factor = 0.25; // Fator de resistência visual
+      cards[center].style.transform = `translateX(calc(-50% + ${dx}px)) scale(1)`;
     }, { passive: true });
 
     track.addEventListener('touchend', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      // Reativa as transições normais do CSS
+      cards.forEach(c => c.style.transition = '');
+      
+      // Limpa o inline style para o CSS reassumir o controle via classes
+      cards.forEach(c => c.style.transform = '');
+
       const dx = e.changedTouches[0].clientX - touchStartX;
       const dy = e.changedTouches[0].clientY - touchStartY;
-      /* Só dispara se o swipe for mais horizontal que vertical */
+
+      /* Só dispara se o swipe for mais horizontal que vertical e passar de 40px */
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
         if (dx < 0) next(); // swipe left → próximo
         else prev();        // swipe right → anterior
-        startAutoplay();
+      } else {
+        // Se soltou antes de 40px, reaplica a posição normal
+        applyPositions(true);
       }
+      startAutoplay();
     }, { passive: true });
-
-    /* Pausa quando sai do viewport */
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => e.isIntersecting ? startAutoplay() : stopAutoplay());
-    }, { threshold: 0.3 });
-    observer.observe(track.closest('.testimonials-carousel'));
-
-  })();
 
   /* ── Zoom de imagem — carrossel cidades (desktop only) ── */
   const zoomModal    = document.getElementById('zoom-modal');
