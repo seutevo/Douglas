@@ -892,7 +892,7 @@ nav a:hover { color: var(--foreground); }
 .testimonials-carousel {
   margin-top: 3.5rem;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   padding: 2.5rem 0 2.5rem;
 }
 
