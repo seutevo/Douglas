@@ -579,25 +579,148 @@ window.addEventListener('resize', () => {
     track.closest('.testimonials-carousel').addEventListener('mouseenter', stopAutoplay);
     track.closest('.testimonials-carousel').addEventListener('mouseleave', startAutoplay);
 
-    /* Swipe mobile */
-    let touchStartX = 0;
-    let touchStartY = 0;
+    /* ── Drag/touch interativo em tempo real ── */
+    let dragStartX    = 0;
+    let dragStartY    = 0;
+    let dragCurrent   = 0;
+    let isDragging    = false;
+    let isHorizontal  = null; // detecta direção na primeira movimentação
+    const DRAG_THRESHOLD = 80;   // px mínimo para confirmar navegação
+    const DRAG_RESIST    = 0.35; // resistência — movimento real = dx * resist
 
+    /* Captura as transformações atuais de cada card */
+    function getCardTransforms() {
+      return Array.from(cards).map(card => {
+        const style  = window.getComputedStyle(card);
+        const matrix = new DOMMatrix(style.transform);
+        return { tx: matrix.m41, scale: card.classList.contains('pos-center') ? 1 : 0.75 };
+      });
+    }
+
+    function onDragStart(clientX, clientY) {
+      dragStartX   = clientX;
+      dragStartY   = clientY;
+      dragCurrent  = 0;
+      isDragging   = true;
+      isHorizontal = null;
+      stopAutoplay();
+      /* Desativa transição durante drag para movimento ser instantâneo */
+      cards.forEach(c => c.style.transition = 'none');
+    }
+
+    function onDragMove(clientX, clientY) {
+      if (!isDragging) return;
+
+      const dx = clientX - dragStartX;
+      const dy = clientY - dragStartY;
+
+      /* Detecta direção na primeira movimentação */
+      if (isHorizontal === null) {
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+        isHorizontal = Math.abs(dx) > Math.abs(dy);
+        /* Se vertical, cancela drag horizontal */
+        if (!isHorizontal) {
+          onDragCancel();
+          return;
+        }
+      }
+
+      if (!isHorizontal) return;
+      dragCurrent = dx;
+
+      /* Move cada card proporcionalmente com resistência */
+      cards.forEach(card => {
+        const isCenter = card.classList.contains('pos-center');
+        const isLeft   = card.classList.contains('pos-left');
+        const isRight  = card.classList.contains('pos-right');
+
+        let baseTranslate = 0;
+        let baseScale     = 0.75;
+
+        if (isCenter)      { baseTranslate = 0;    baseScale = 1; }
+        else if (isLeft)   { baseTranslate = -480;  baseScale = 0.75; }
+        else if (isRight)  { baseTranslate = 480;   baseScale = 0.75; }
+
+        /* Deslocamento com resistência */
+        const offset = dx * DRAG_RESIST;
+
+        /* Escala progressiva: card lateral que se aproxima do centro cresce */
+        let scale = baseScale;
+        if (isRight && dx < 0) {
+          /* Arrastando para esquerda — card direito se aproxima */
+          const progress = Math.min(Math.abs(dx) / DRAG_THRESHOLD, 1);
+          scale = baseScale + (1 - baseScale) * progress * 0.6;
+        } else if (isLeft && dx > 0) {
+          /* Arrastando para direita — card esquerdo se aproxima */
+          const progress = Math.min(Math.abs(dx) / DRAG_THRESHOLD, 1);
+          scale = baseScale + (1 - baseScale) * progress * 0.6;
+        }
+
+        card.style.transform = `translateX(calc(-50% + ${baseTranslate + offset}px)) scale(${scale.toFixed(3)})`;
+      });
+    }
+
+    function onDragEnd(clientX) {
+      if (!isDragging) return;
+      isDragging = false;
+
+      /* Reativa transição antes de animar para posição final */
+      cards.forEach(c => c.style.transition = '');
+
+      const dx = clientX - dragStartX;
+
+      if (isHorizontal && Math.abs(dx) > DRAG_THRESHOLD) {
+        /* Threshold atingido — confirma navegação */
+        if (dx < 0) next();
+        else prev();
+      } else {
+        /* Threshold não atingido — snap back para posição original */
+        applyPositions(true);
+      }
+
+      startAutoplay();
+    }
+
+    function onDragCancel() {
+      if (!isDragging) return;
+      isDragging = false;
+      cards.forEach(c => c.style.transition = '');
+      applyPositions(true);
+      startAutoplay();
+    }
+
+    /* Touch events (mobile) */
     track.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
+      onDragStart(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    track.addEventListener('touchmove', (e) => {
+      onDragMove(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
 
     track.addEventListener('touchend', (e) => {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      /* Só dispara se o swipe for mais horizontal que vertical */
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-        if (dx < 0) next(); // swipe left → próximo
-        else prev();        // swipe right → anterior
-        startAutoplay();
-      }
+      onDragEnd(e.changedTouches[0].clientX);
     }, { passive: true });
+
+    track.addEventListener('touchcancel', onDragCancel, { passive: true });
+
+    /* Mouse events (desktop — drag com clique) */
+    track.addEventListener('mousedown', (e) => {
+      /* Ignora clique em botões e dots */
+      if (e.target.closest('.t-dot') || e.target.closest('button')) return;
+      onDragStart(e.clientX, e.clientY);
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      onDragMove(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      onDragEnd(e.clientX);
+    });
 
     /* Pausa quando sai do viewport */
     const observer = new IntersectionObserver(entries => {
