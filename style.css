@@ -510,7 +510,9 @@ nav a:hover { color: var(--foreground); }
     box-shadow: inset 0 0 0 3px color-mix(in oklab, var(--cta) 60%, transparent); /* Borda interna muda de cor e espessura */
     background-color: #ffffff;
 	position: relative;
-	z-index: 10;}
+	z-index: 10;
+	user-select: none;
+	}
 	
 }
 
@@ -737,6 +739,38 @@ nav a:hover { color: var(--foreground); }
 
 
 /* ============================================================
+   ESTADO DE CARREGAMENTO & ANIMAÇÃO DO BOTÃO (SUBMIT)
+   ============================================================ */
+
+/* Previne múltiplos cliques e remove efeitos de hover durante o envio */
+.btn-cta:disabled,
+.btn-cta-full:disabled {
+  opacity: 0.85;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Animação dos 3 pontos (...) via CSS puro */
+.btn-loading::after {
+  content: '';
+  display: inline-block;
+  vertical-align: bottom;
+  width: 1.2em;
+  text-align: left;
+  animation: dots 1.5s infinite steps(4, jump-none);
+}
+
+@keyframes dots {
+  0%   { content: ''; }
+  33%  { content: '.'; }
+  66%  { content: '..'; }
+  100% { content: '...'; }
+}
+
+
+
+/* ============================================================
    CONSULTANT
    ============================================================ */
 .consultant { padding-block: 4rem; }
@@ -855,36 +889,147 @@ nav a:hover { color: var(--foreground); }
 
 .testimonials h2 .soft { color: color-mix(in oklab, var(--background) 55%, transparent); }
 
-.testimonials-grid {
-  display: grid;
-  gap: 1.5rem;
+.testimonials-carousel {
   margin-top: 3.5rem;
+  position: relative;
+  overflow: visible;
+  padding: 2.5rem 0 2.5rem;
 }
 
-@media (min-width: 768px) {
-  .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+/* Track é o palco — ocupa toda a largura, altura definida pelo card central */
+.testimonials-track {
+  position: relative;
+  width: 100%;
+  /* altura mínima para acomodar o card central */
+  height: 310px;
 }
+
+/* ── Dots ── */
+.testimonials-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2.5rem;
+}
+
+.t-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.35);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, width 0.3s ease;
+}
+
+.t-dot.active {
+  background: white;
+  width: 22px;
+}
+
+/* ── Cards ── */
+.testimonial-card {
+  /* Posição absoluta dentro do track, centralizado horizontalmente */
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 444px;
+  max-width: 85vw;
+  /* translateX(-50%) centraliza, o restante é aplicado via JS/classe */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in oklab, var(--background) 16%, transparent);
+  background-color: color-mix(in oklab, var(--background) 8%, transparent);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition:
+    transform 0.65s cubic-bezier(0.45, 0, 0.15, 1),
+    opacity 0.45s cubic-bezier(0.45, 0, 0.15, 1);
+  will-change: transform, opacity;
+  user-select: none;
+  /* começa invisível até JS aplicar posição */
+  opacity: 0;
+}
+
+/* Estado central — destaque, escala 1, totalmente visível */
+.testimonial-card.pos-center {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+  z-index: 3;
+  cursor: default;
+  /* fundo sólido para o card central não deixar ver os laterais por baixo */
+  background-color: color-mix(in oklab, var(--brand) 90%, white);
+  box-shadow: 0px 10px 18px 0px rgba(4,0,41,0.45);
+  -webkit-box-shadow: 0px 10px 18px 0px rgba(4,0,41,0.45);
+  -moz-box-shadow: 0px 10px 18px 0px rgba(4,0,41,0.45);
+}
+
+/* Estado direita — 75% do tamanho, afastado com gap */
+.testimonial-card.pos-right {
+  transform: translateX(calc(-50% + 408px)) scale(0.75);
+  opacity: 0.45;
+  z-index: 2;
+}
+
+/* Estado esquerda — 75% do tamanho, afastado com gap */
+.testimonial-card.pos-left {
+  transform: translateX(calc(-50% - 408px)) scale(0.75);
+  opacity: 0.45;
+  z-index: 2;
+}
+
+/* Mobile: track mais alto, cards laterais vazam para fora */
+@media (max-width: 767px) {
+  .testimonials-track {
+    height: 380px;
+  }
+	
+  .testimonial-card.pos-center {
+  transform: translateX(-50%) scale(1);
+  background-color: color-mix(in oklab, var(--brand) 88%, white);
+  box-shadow: 0px 1px 13px 0px rgba(4,0,41,0.55);
+  -webkit-box-shadow: 0px 1px 13px 0px rgba(4,0,41,0.55);
+  -moz-box-shadow: 0px 1px 13px 0px rgba(4,0,41,0.55);
+}
+
+  .testimonial-card.pos-right {
+    transform: translateX(calc(-50% + 70vw)) scale(0.75);
+  }
+
+  .testimonial-card.pos-left {
+    transform: translateX(calc(-50% - 70vw)) scale(0.75);
+  }
 
 .testimonial-card {
+  max-width: 75vw;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   border-radius: var(--radius-md);
-  border: 1px solid color-mix(in oklab, var(--background) 10%, transparent);
-  background-color: color-mix(in oklab, var(--background) 3%, transparent);
-  padding: 2rem;
+  border: 1px solid color-mix(in oklab, var(--background) 16%, transparent);
+  background-color: color-mix(in oklab, var(--background) 8%, transparent);
+  padding: 1.7rem;
 }
 
-@media (min-width: 1024px) { .testimonial-card { padding: 2.5rem; } }
+}
+
+
+@media (min-width: 1024px) { .testimonial-card { padding: 2rem; } }
 
 .quote-icon { color: color-mix(in oklab, var(--background) 35%, transparent); }
 
 .testimonial-card blockquote {
   margin-top: 1.5rem;
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 400;
   line-height: 1.4;
+  font-kerning: normal;
+  letter-spacing: 0.01rem;
   color: color-mix(in oklab, var(--background) 90%, transparent);
 }
 
@@ -911,6 +1056,7 @@ nav a:hover { color: var(--foreground); }
 	font-size: 0.95rem;
 	font-weight: 500;
 	font-kerning: normal;
+	letter-spacing: 0.03rem;
 	color: var(--background);
 }
 
@@ -918,6 +1064,7 @@ nav a:hover { color: var(--foreground); }
 	font-size: 0.8rem;
 	font-kerning: normal;
 	color: color-mix(in oklab, var(--background) 55%, transparent);
+	letter-spacing: 0.03rem;
 }
 
 /* ============================================================
@@ -2045,3 +2192,112 @@ svg { display: inline-block; vertical-align: middle; }
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* ============================================================
+   ZOOM DE IMAGEM — CARROSSEL CIDADES (desktop only)
+   ============================================================ */
+
+/* Ícone de lupa — oculto por padrão, visível no hover do wrap */
+.zoom-hint {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .zoom-hint {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    z-index: 3;
+    opacity: 0;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  /* Aparece ao passar o mouse no wrap — mas não quando hover nos botões */
+  .city-img-wrap:hover .zoom-hint {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  /* Esconde a lupa quando mouse está sobre os controles */
+  .city-img-wrap:has(.carousel-controls:hover) .zoom-hint {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+
+  /* Cursor pointer nas imagens zoomáveis */
+  .zoom-trigger {
+    cursor: zoom-in;
+  }
+}
+
+/* ── Modal de zoom ── */
+.zoom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.zoom-modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.zoom-modal-img {
+  max-width: 90vw;
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
+  transform: scale(0.94);
+  transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.3s ease;
+  opacity: 0;
+  cursor: zoom-out;
+}
+
+.zoom-modal-overlay.open .zoom-modal-img {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.zoom-modal-close {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: none;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s ease;
+  z-index: 2;
+}
+
+.zoom-modal-close:hover {
+  background: rgba(255, 255, 255, 0.28);
+}

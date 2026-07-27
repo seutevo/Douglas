@@ -198,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* NEW FORM INTEGRAÇÃO */
 
 /* ── Integração Formulário com Make ── */
+/* ── Envio do Formulário + Timer de 2.5s e Animação de Carregamento ── */
 const leadForm = document.getElementById('lead-form');
 const formFeedback = document.getElementById('form-feedback');
 
@@ -206,38 +207,109 @@ if (leadForm) {
     e.preventDefault();
 
     const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) submitBtn.disabled = true;
+    const originalBtnText = submitBtn ? submitBtn.innerText : '';
+
+    // 1. Ativa estado de carregamento no botão
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('btn-loading');
+      submitBtn.innerText = 'Enviando';
+    }
 
     const formData = new FormData(leadForm);
     const data = Object.fromEntries(formData.entries());
     const webhookUrl = 'https://hook.us2.make.com/02vrpz1tcsr477ybqpwe98vhhv7dq3ve';
 
+    // 2. Timer de delay mínimo de 2.500ms (2,5 segundos)
+    const minDelay = new Promise(resolve => setTimeout(resolve, 2500));
+
     try {
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      // Executa a requisição HTTP e o cronômetro simultaneamente
+      const [response] = await Promise.all([
+        fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        }),
+        minDelay
+      ]);
 
       if (response.ok) {
-        leadForm.style.display = 'none';
-        if (formFeedback) formFeedback.classList.remove('hidden');
+        // 3. Oculta o formulário e exibe o bloco de sucesso
+        leadForm.classList.add('hidden');
+        if (formFeedback) {
+          formFeedback.classList.remove('hidden');
+        }
         leadForm.reset();
       } else {
-        console.error('Erro no webhook:', response.statusText);
-        alert('Houve um problema no envio. Tente novamente.');
+        throw new Error(`Erro no servidor: ${response.status}`);
       }
     } catch (error) {
-      console.error('Erro de conexão:', error);
-      alert('Erro de conexão. Tente novamente mais tarde.');
+      console.error('Erro de envio:', error);
+      alert('Houve um problema ao enviar seus dados. Por favor, tente novamente ou entre em contato via WhatsApp.');
+      
+      // Restaura o botão em caso de falha para o usuário tentar novamente
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('btn-loading');
+        submitBtn.innerText = originalBtnText;
+      }
     } finally {
-      if (submitBtn) submitBtn.disabled = false;
+      // Garante a remoção da animação se o formulário continuar visível
+      if (submitBtn && !submitBtn.disabled) {
+        submitBtn.classList.remove('btn-loading');
+      }
     }
+  });
+}	
+
+	  /* Máscara dinâmica para telefone/WhatsApp (DDD + 9 dígitos) */
+const phoneInput = document.getElementById('whatsapp');
+
+if (phoneInput) {
+  phoneInput.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for dígito
+    
+    // Limita o tamanho máximo a 11 dígitos (DDD + 9 do celular)
+    if (value.length > 11) {
+      value = value.slice(0, 11);
+    }
+
+    // Aplica a formatação conforme o tamanho do texto
+    if (value.length > 10) {
+      // Formato com 11 dígitos: (XX) XXXXX-XXXX
+      value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`;
+    } else if (value.length > 6) {
+      // Formato intermediário com 10 dígitos (caso receba fixo ou digitando): (XX) XXXX-XXXX
+      value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+    } else if (value.length > 2) {
+      // Formato apenas com DDD: (XX) XXXX
+      value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+    } else if (value.length > 0) {
+      // Apenas parêntese inicial: (XX
+      value = `(${value}`;
+    }
+
+    e.target.value = value;
   });
 }
 	  
 	  
-	  
+
+  /* ── Testimonials carousel — entrada suave do container ── */
+  const testimonialsCarousel = document.querySelector('.testimonials-carousel');
+  if (testimonialsCarousel) {
+    testimonialsCarousel.classList.add('anim-stagger');
+    const tcObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          testimonialsCarousel.classList.add('visible');
+          tcObserver.unobserve(testimonialsCarousel);
+        }
+      });
+    }, { threshold: 0.15 });
+    tcObserver.observe(testimonialsCarousel);
+  }
 
   /* ── Pillar cards — stagger de entrada separado ── */
   const pillarObserver = new IntersectionObserver((entries) => {
@@ -409,6 +481,174 @@ if (leadForm) {
   });
 
 
+/* Ajusta o slider se a tela mudar de tamanho */
+window.addEventListener('resize', () => {
+  const activeTab = document.querySelector('.city-tab.active');
+  if (activeTab && slider) moveSlider(activeTab);
+});
+
+
+
+
+  /* ── Carrossel de Depoimentos (coverflow) ── */
+  (function() {
+    const track   = document.getElementById('testimonials-track');
+    const dots    = document.querySelectorAll('.t-dot');
+    const cards   = document.querySelectorAll('.testimonial-card[data-index]');
+    if (!track || !cards.length) return;
+
+    const TOTAL       = cards.length; // 3
+    const AUTOPLAY_MS = 6000;
+    let current       = 0;
+    let autoTimer     = null;
+    let isAnimating   = false;
+
+    /* Aplica as classes de posição */
+    function applyPositions(animate) {
+      const left   = (current - 1 + TOTAL) % TOTAL;
+      const center = current;
+      const right  = (current + 1) % TOTAL;
+
+      if (!animate) {
+        /* Desativa transição temporariamente para posicionamento inicial */
+        cards.forEach(c => {
+          c.style.transition = 'none';
+          c.classList.remove('pos-left', 'pos-center', 'pos-right');
+        });
+        cards[center].classList.add('pos-center');
+        cards[left].classList.add('pos-left');
+        cards[right].classList.add('pos-right');
+        dots.forEach((d, i) => d.classList.toggle('active', i === current));
+        /* Força reflow antes de reativar transição */
+        track.getBoundingClientRect();
+        cards.forEach(c => c.style.transition = '');
+      } else {
+        cards.forEach((card, i) => {
+          card.classList.remove('pos-left', 'pos-center', 'pos-right');
+          if (i === center)    card.classList.add('pos-center');
+          else if (i === left) card.classList.add('pos-left');
+          else if (i === right) card.classList.add('pos-right');
+        });
+        dots.forEach((d, i) => d.classList.toggle('active', i === current));
+      }
+    }
+
+    /* Navega para índice — direção determina animação */
+    function goTo(index) {
+      if (isAnimating || index === current) return;
+      isAnimating = true;
+      current = ((index % TOTAL) + TOTAL) % TOTAL;
+      applyPositions(true);
+      setTimeout(() => { isAnimating = false; }, 570);
+    }
+
+    function next() { goTo((current + 1) % TOTAL); }
+    function prev() { goTo((current - 1 + TOTAL) % TOTAL); }
+
+    function startAutoplay() {
+      stopAutoplay();
+      autoTimer = setInterval(next, AUTOPLAY_MS);
+    }
+
+    function stopAutoplay() {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
+    /* Init sem animação */
+    applyPositions(false);
+    startAutoplay();
+
+    /* Clique nos cards laterais */
+    cards.forEach((card, i) => {
+      card.addEventListener('click', () => {
+        if (card.classList.contains('pos-center')) return;
+        goTo(i);
+        startAutoplay();
+      });
+    });
+
+    /* Dots */
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        goTo(parseInt(dot.dataset.goto));
+        startAutoplay();
+      });
+    });
+
+    /* Pausa autoplay quando hover no carrossel */
+    track.closest('.testimonials-carousel').addEventListener('mouseenter', stopAutoplay);
+    track.closest('.testimonials-carousel').addEventListener('mouseleave', startAutoplay);
+
+    /* Swipe mobile */
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    track.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    track.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      /* Só dispara se o swipe for mais horizontal que vertical */
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+        if (dx < 0) next(); // swipe left → próximo
+        else prev();        // swipe right → anterior
+        startAutoplay();
+      }
+    }, { passive: true });
+
+    /* Pausa quando sai do viewport */
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => e.isIntersecting ? startAutoplay() : stopAutoplay());
+    }, { threshold: 0.3 });
+    observer.observe(track.closest('.testimonials-carousel'));
+
+  })();
+
+  /* ── Zoom de imagem — carrossel cidades (desktop only) ── */
+  const zoomModal    = document.getElementById('zoom-modal');
+  const zoomModalImg = document.getElementById('zoom-modal-img');
+  const zoomClose    = document.getElementById('zoom-modal-close');
+
+  function openZoom(src, alt) {
+    if (window.innerWidth < 1024) return; // desktop only
+    zoomModalImg.src = src;
+    zoomModalImg.alt = alt || 'Imagem ampliada';
+    zoomModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeZoom() {
+    zoomModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* Delegação de eventos — clique nas imagens zoomáveis dentro dos carrosseis das cidades */
+  document.querySelectorAll('[data-carousel] .zoom-trigger').forEach(img => {
+    img.addEventListener('click', (e) => {
+      /* Não dispara se o clique veio de dentro dos controles */
+      if (e.target.closest('.carousel-controls')) return;
+      openZoom(img.src, img.alt);
+    });
+  });
+
+  /* Fechar */
+  if (zoomClose) zoomClose.addEventListener('click', closeZoom);
+
+  /* Clique na imagem ampliada fecha (cursor zoom-out) */
+  if (zoomModalImg) zoomModalImg.addEventListener('click', closeZoom);
+
+  /* Clique no overlay escuro fecha */
+  zoomModal.addEventListener('click', (e) => {
+    if (e.target === zoomModal) closeZoom();
+  });
+
+  /* ESC fecha */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && zoomModal.classList.contains('open')) closeZoom();
+  });
 
   /* ── Modal Águia Consultoria ── */
 const aguiaModal   = document.getElementById('aguia-modal');
@@ -493,8 +733,8 @@ window.addEventListener('popstate', () => {
   });
 
   /* ── Open first FAQ by default ── */
-  const firstFaq = document.querySelector('.faq-item');
-  if (firstFaq) firstFaq.classList.add('open');
+  //const firstFaq = document.querySelector('.faq-item');
+  //if (firstFaq) firstFaq.classList.add('open');
 
   /* ── Stagger scroll animations ── */
   const observer = new IntersectionObserver((entries) => {
@@ -515,7 +755,7 @@ window.addEventListener('popstate', () => {
     const animEls = section.querySelectorAll(
       'h1, h2, h3, p.eyebrow, .section-eyebrow, .hero-desc, .section-sub, ' +
       '.trust-item, .metric-item, .city-headline, .city-body, ' +
-      '.testimonial-card, .checklist li, .hero-ctas, .btn-cta, .btn-cta-full, ' +
+      '.checklist li, .hero-ctas, .btn-cta, .btn-cta-full, ' +
       '.consultant-content h2, .consultant-content p, .consultant-meta, ' +
       '.lead-form-info h2, .lead-form-info p, form, ' +
       '.faq-item, .footer-brand, .footer-col'
