@@ -873,6 +873,7 @@ nav a:hover { color: var(--foreground); }
   background-color: #003358;
   padding-block: 4.5rem;
   color: var(--background);
+  overflow-x: hidden; 
 }
 
 @media (min-width: 1024px) { .testimonials { padding-block: 8rem; } }
@@ -892,7 +893,6 @@ nav a:hover { color: var(--foreground); }
 .testimonials-carousel {
   margin-top: 3.5rem;
   position: relative;
-  overflow: hidden;
   padding: 2.5rem 0 2.5rem;
 }
 
