@@ -580,32 +580,57 @@ window.addEventListener('resize', () => {
     track.closest('.testimonials-carousel').addEventListener('mouseleave', startAutoplay);
 
     /* ── Drag/touch interativo em tempo real ── */
-    let dragStartX    = 0;
-    let dragStartY    = 0;
-    let dragCurrent   = 0;
-    let isDragging    = false;
-    let isHorizontal  = null; // detecta direção na primeira movimentação
-    const DRAG_THRESHOLD = 80;   // px mínimo para confirmar navegação
-    const DRAG_RESIST    = 0.35; // resistência — movimento real = dx * resist
+    let dragStartX   = 0;
+    let dragStartY   = 0;
+    let isDragging   = false;
+    let isHorizontal = null;
 
-    /* Captura as transformações atuais de cada card */
-    function getCardTransforms() {
-      return Array.from(cards).map(card => {
-        const style  = window.getComputedStyle(card);
-        const matrix = new DOMMatrix(style.transform);
-        return { tx: matrix.m41, scale: card.classList.contains('pos-center') ? 1 : 0.75 };
-      });
+    /* Offset base de cada posição — deve espelhar exatamente o CSS */
+    const isMobile = () => window.innerWidth < 768;
+    function getBaseOffset(pos) {
+      if (pos === 'center') return 0;
+      const offset = isMobile() ? window.innerWidth * 0.70 : 408;
+      return pos === 'right' ? offset : -offset;
+    }
+
+    function getBaseScale(pos) {
+      return pos === 'center' ? 1 : 0.75;
+    }
+
+    function getCardPos(card) {
+      if (card.classList.contains('pos-center')) return 'center';
+      if (card.classList.contains('pos-left'))   return 'left';
+      return 'right';
+    }
+
+    /* Aplica transform diretamente no card durante o drag */
+    function setCardDragTransform(card, extraX, progress) {
+      const pos       = getCardPos(card);
+      const baseOffset = getBaseOffset(pos);
+      const baseScale  = getBaseScale(pos);
+
+      /* Escala progressiva no card que se aproxima */
+      let scale = baseScale;
+      const approaching =
+        (pos === 'right' && extraX < 0) ||
+        (pos === 'left'  && extraX > 0);
+      if (approaching) {
+        scale = baseScale + (1 - baseScale) * Math.min(progress, 1) * 0.7;
+      }
+
+      card.style.transform = `translateX(calc(-50% + ${baseOffset + extraX}px)) scale(${scale.toFixed(4)})`;
     }
 
     function onDragStart(clientX, clientY) {
       dragStartX   = clientX;
       dragStartY   = clientY;
-      dragCurrent  = 0;
       isDragging   = true;
       isHorizontal = null;
       stopAutoplay();
-      /* Desativa transição durante drag para movimento ser instantâneo */
-      cards.forEach(c => c.style.transition = 'none');
+      /* Desativa transição para movimento instantâneo */
+      cards.forEach(c => {
+        c.style.transition = 'none';
+      });
     }
 
     function onDragMove(clientX, clientY) {
@@ -614,68 +639,41 @@ window.addEventListener('resize', () => {
       const dx = clientX - dragStartX;
       const dy = clientY - dragStartY;
 
-      /* Detecta direção na primeira movimentação */
+      /* Detecta direção dominante nos primeiros pixels */
       if (isHorizontal === null) {
-        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
         isHorizontal = Math.abs(dx) > Math.abs(dy);
-        /* Se vertical, cancela drag horizontal */
-        if (!isHorizontal) {
-          onDragCancel();
-          return;
-        }
+        if (!isHorizontal) { onDragCancel(); return; }
       }
 
       if (!isHorizontal) return;
-      dragCurrent = dx;
 
-      /* Move cada card proporcionalmente com resistência */
-      cards.forEach(card => {
-        const isCenter = card.classList.contains('pos-center');
-        const isLeft   = card.classList.contains('pos-left');
-        const isRight  = card.classList.contains('pos-right');
+      /* Deslocamento com resistência progressiva */
+      const maxDrag    = isMobile() ? window.innerWidth * 0.5 : 300;
+      const resistance = 1 - (Math.abs(dx) / (maxDrag * 3));
+      const extraX     = dx * Math.max(resistance, 0.3);
+      const progress   = Math.abs(dx) / 120;
 
-        let baseTranslate = 0;
-        let baseScale     = 0.75;
-
-        if (isCenter)      { baseTranslate = 0;    baseScale = 1; }
-        else if (isLeft)   { baseTranslate = -480;  baseScale = 0.75; }
-        else if (isRight)  { baseTranslate = 480;   baseScale = 0.75; }
-
-        /* Deslocamento com resistência */
-        const offset = dx * DRAG_RESIST;
-
-        /* Escala progressiva: card lateral que se aproxima do centro cresce */
-        let scale = baseScale;
-        if (isRight && dx < 0) {
-          /* Arrastando para esquerda — card direito se aproxima */
-          const progress = Math.min(Math.abs(dx) / DRAG_THRESHOLD, 1);
-          scale = baseScale + (1 - baseScale) * progress * 0.6;
-        } else if (isLeft && dx > 0) {
-          /* Arrastando para direita — card esquerdo se aproxima */
-          const progress = Math.min(Math.abs(dx) / DRAG_THRESHOLD, 1);
-          scale = baseScale + (1 - baseScale) * progress * 0.6;
-        }
-
-        card.style.transform = `translateX(calc(-50% + ${baseTranslate + offset}px)) scale(${scale.toFixed(3)})`;
-      });
+      cards.forEach(card => setCardDragTransform(card, extraX, progress));
     }
 
     function onDragEnd(clientX) {
       if (!isDragging) return;
       isDragging = false;
 
-      /* Reativa transição antes de animar para posição final */
-      cards.forEach(c => c.style.transition = '');
+      const dx        = clientX - dragStartX;
+      const threshold = isMobile() ? 60 : 80;
 
-      const dx = clientX - dragStartX;
+      /* Reativa transição antes do snap/navigate */
+      cards.forEach(c => {
+        c.style.transition = '';
+        c.style.transform  = ''; /* deixa CSS assumir */
+      });
 
-      if (isHorizontal && Math.abs(dx) > DRAG_THRESHOLD) {
-        /* Threshold atingido — confirma navegação */
-        if (dx < 0) next();
-        else prev();
+      if (isHorizontal && Math.abs(dx) >= threshold) {
+        dx < 0 ? next() : prev();
       } else {
-        /* Threshold não atingido — snap back para posição original */
-        applyPositions(true);
+        applyPositions(true); /* snap back */
       }
 
       startAutoplay();
@@ -684,42 +682,37 @@ window.addEventListener('resize', () => {
     function onDragCancel() {
       if (!isDragging) return;
       isDragging = false;
-      cards.forEach(c => c.style.transition = '');
+      cards.forEach(c => { c.style.transition = ''; c.style.transform = ''; });
       applyPositions(true);
       startAutoplay();
     }
 
-    /* Touch events (mobile) */
+    /* Touch */
     track.addEventListener('touchstart', (e) => {
       onDragStart(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
 
     track.addEventListener('touchmove', (e) => {
+      if (isDragging && isHorizontal) e.preventDefault();
       onDragMove(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
+    }, { passive: false });
 
-    track.addEventListener('touchend', (e) => {
-      onDragEnd(e.changedTouches[0].clientX);
-    }, { passive: true });
-
+    track.addEventListener('touchend',    (e) => onDragEnd(e.changedTouches[0].clientX), { passive: true });
     track.addEventListener('touchcancel', onDragCancel, { passive: true });
 
-    /* Mouse events (desktop — drag com clique) */
+    /* Mouse (desktop) */
     track.addEventListener('mousedown', (e) => {
-      /* Ignora clique em botões e dots */
-      if (e.target.closest('.t-dot') || e.target.closest('button')) return;
+      if (e.target.closest('button') || e.target.closest('.t-dot')) return;
       onDragStart(e.clientX, e.clientY);
       e.preventDefault();
     });
 
     window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      onDragMove(e.clientX, e.clientY);
+      if (isDragging) onDragMove(e.clientX, e.clientY);
     });
 
     window.addEventListener('mouseup', (e) => {
-      if (!isDragging) return;
-      onDragEnd(e.clientX);
+      if (isDragging) onDragEnd(e.clientX);
     });
 
     /* Pausa quando sai do viewport */
