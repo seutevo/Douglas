@@ -65,6 +65,12 @@ button {
   color: inherit;
 }
 
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  border-radius: 0.15rem;
+  outline: 3px solid color-mix(in oklab, var(--cta) 85%, transparent);
+  outline-offset: 3px;
+}
+
 h1, h2, h3, h4, h5 {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
@@ -1183,10 +1189,27 @@ form {
 .field select:focus { border-color: var(--cta); }
 .field textarea:focus { border-color: var(--cta); }
 
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: #b42318;
+}
+
 .form-disclaimer {
   margin-top: 1rem;
   font-size: 0.75rem;
   color: color-mix(in oklab, var(--foreground) 55%, transparent);
+}
+
+.form-feedback-error {
+  margin-top: 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid #b42318;
+  border-radius: var(--radius);
+  background: #fff1f0;
+  color: #7a1b16;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 /* ============================================================
@@ -1569,7 +1592,8 @@ svg { display: inline-block; vertical-align: middle; }
   transition: opacity 0.25s ease;
 }
 
-.hero-video-wrap:hover .hero-video-controls {
+.hero-video-wrap:hover .hero-video-controls,
+.hero-video-wrap:focus-within .hero-video-controls {
   opacity: 1;
 }
 
@@ -1606,7 +1630,8 @@ svg { display: inline-block; vertical-align: middle; }
   cursor: pointer;
 }
 
-.hero-video-wrap:hover .hero-volume-slider {
+.hero-video-wrap:hover .hero-volume-slider,
+.hero-video-wrap:focus-within .hero-volume-slider {
   width: 5rem;
   opacity: 1;
 }
@@ -1616,42 +1641,34 @@ svg { display: inline-block; vertical-align: middle; }
    ============================================================ */
 
 /* Mobile: esconde o vídeo na coluna direita, mostra no slot inline */
-.hero-video-mobile {
-  display: none;
-}
-
 @media (max-width: 1023px) {
-  /* Esconde a coluna de vídeo original */
-  .hero-image-col {
-    display: none;
+  /* Um único vídeo é reordenado entre a descrição e os CTAs. */
+  .hero-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
 
-  /* Ativa o slot inline entre hero-desc e CTA */
-  .hero-video-mobile {
+  .hero-content { display: contents; }
+
+  .hero-image-col {
     display: block;
+    order: 1;
     margin-top: 1.5rem;
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: 0 30px 80px -30px oklch(22% .04 250 / 35%);
   }
 
-  .hero-video-mobile video {
-    width: 100%;
-    aspect-ratio: 4/5;
-    object-fit: cover;
-    display: block;
-  }
-}
+  .hero-ctas { order: 2; }
 
-/* Desktop: esconde o slot mobile, mostra normalmente na coluna */
-@media (min-width: 1024px) {
-  .hero-video-mobile {
-    display: none !important;
+  .hero-video-controls {
+    top: auto;
+    bottom: 1rem;
+    opacity: 1;
   }
 
-  .hero-image-col {
-    display: block;
-  }
+  .hero-volume-slider { display: none; }
 }
 
 /* ============================================================
@@ -1659,76 +1676,6 @@ svg { display: inline-block; vertical-align: middle; }
    ============================================================ */
 
 /* Wrapper relativo para posicionar controles sobre o vídeo */
-.hero-video-mobile-inner {
-  position: relative;
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: 0 30px 80px -30px oklch(22% .04 250 / 35%);
-}
-
-.hero-video-mobile-inner video {
-  width: 100%;
-  aspect-ratio: 4/5;
-  object-fit: cover;
-  display: block;
-}
-
-/* Aviso "toque para ativar som" — some após interação */
-.mobile-sound-hint {
-  position: absolute;
-  bottom: 4rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: rgba(0, 0, 0, 0.55);
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  backdrop-filter: blur(6px);
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  white-space: nowrap;
-}
-
-.mobile-sound-hint.hidden { opacity: 0; }
-
-/* Controles circulares fixos — canto inferior direito */
-.mobile-video-controls {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.mobile-ctrl-btn {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: background 0.15s, transform 0.15s;
-  flex-shrink: 0;
-}
-
-.mobile-ctrl-btn:active {
-  transform: scale(0.9);
-  background: rgba(0, 0, 0, 0.75);
-}
-
 /* Logo — subtítulo header e footer */
 .logo-text {
   display: flex;

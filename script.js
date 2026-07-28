@@ -3,8 +3,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
 
-  /* ── Hero video — Desktop ── */
-  const desktopVideo    = document.getElementById('hero-video-desktop');
+  /* ── Hero video ── */
+  const heroVideo       = document.getElementById('hero-video');
   const btnPlayPause    = document.getElementById('hero-play-pause');
   const iconPause       = document.getElementById('icon-pause');
   const iconPlay        = document.getElementById('icon-play');
@@ -23,175 +23,59 @@ document.addEventListener('DOMContentLoaded', () => {
     iconSound.style.display = muted ? 'none' : '';
   }
 
-  if (desktopVideo) {
+  if (heroVideo) {
     /* Clique direto no vídeo pausa/retoma */
-    desktopVideo.addEventListener('click', () => {
-      if (desktopVideo.paused) { desktopVideo.play(); setDesktopPlayIcon(true); }
-      else { desktopVideo.pause(); setDesktopPlayIcon(false); }
+    heroVideo.addEventListener('click', () => {
+      if (heroVideo.paused) { heroVideo.play(); setDesktopPlayIcon(true); }
+      else { heroVideo.pause(); setDesktopPlayIcon(false); }
     });
 
     /* Botão play/pause */
     btnPlayPause.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (desktopVideo.paused) { desktopVideo.play(); setDesktopPlayIcon(true); }
-      else { desktopVideo.pause(); setDesktopPlayIcon(false); }
+      if (heroVideo.paused) { heroVideo.play(); setDesktopPlayIcon(true); }
+      else { heroVideo.pause(); setDesktopPlayIcon(false); }
     });
 
     /* Mute/unmute */
     btnMute.addEventListener('click', () => {
-      if (desktopVideo.muted) {
-        desktopVideo.muted  = false;
-        desktopVideo.volume = volSlider.value > 0 ? parseFloat(volSlider.value) : 0.5;
-        volSlider.value     = desktopVideo.volume;
+      if (heroVideo.muted) {
+        heroVideo.muted  = false;
+        heroVideo.volume = volSlider.value > 0 ? parseFloat(volSlider.value) : 0.5;
+        volSlider.value  = heroVideo.volume;
         setDesktopMuteIcon(false);
       } else {
-        desktopVideo.muted = true;
+        heroVideo.muted = true;
         setDesktopMuteIcon(true);
       }
     });
 
     /* Volume slider */
     volSlider.addEventListener('input', () => {
-      desktopVideo.volume = parseFloat(volSlider.value);
-      desktopVideo.muted  = desktopVideo.volume === 0;
-      setDesktopMuteIcon(desktopVideo.muted);
+      heroVideo.volume = parseFloat(volSlider.value);
+      heroVideo.muted  = heroVideo.volume === 0;
+      setDesktopMuteIcon(heroVideo.muted);
     });
   }
 
-  /* ── Hero video — Mobile (estilo Instagram) ── */
-  const mobileSlot = document.getElementById('hero-video-mobile-slot');
-
-  function buildMobileVideo() {
-    if (window.innerWidth >= 1024 || !mobileSlot) return;
-    if (mobileSlot.querySelector('video')) return; // já montado
-
-    mobileSlot.innerHTML = ''; // limpa comentário
-
-    /* Wrapper */
-    const wrap = document.createElement('div');
-    wrap.className = 'hero-video-mobile-inner';
-
-    /* Vídeo — mudo por padrão (autoplay policy) */
-    const vid = document.createElement('video');
-    vid.autoplay   = true;
-    vid.muted      = true;
-    vid.loop       = true;
-    vid.playsInline = true;
-    vid.setAttribute('playsinline', '');
-    vid.poster = 'imagens/hero-building.jpg';
-
-    const srcWebm = document.createElement('source');
-    srcWebm.src  = 'imagens/hero-video.webm';
-    srcWebm.type = 'video/webm';
-
-    const srcMp4 = document.createElement('source');
-    srcMp4.src  = 'imagens/hero-video.mp4';
-    srcMp4.type = 'video/mp4';
-
-    vid.appendChild(srcWebm);
-    vid.appendChild(srcMp4);
-
-    /* Aviso "toque para ativar o som" */
-    const hint = document.createElement('div');
-    hint.className = 'mobile-sound-hint';
-    hint.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> Toque para ativar o som';
-
-    /* Controles circulares */
-    const controls = document.createElement('div');
-    controls.className = 'mobile-video-controls';
-
-    /* Botão mute */
-    const btnM = document.createElement('button');
-    btnM.className  = 'mobile-ctrl-btn';
-    btnM.setAttribute('aria-label', 'Ativar som');
-    btnM.innerHTML  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" id="mob-icon-mute"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" id="mob-icon-sound" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-
-    /* Botão pause */
-    const btnP = document.createElement('button');
-    btnP.className  = 'mobile-ctrl-btn';
-    btnP.setAttribute('aria-label', 'Pausar');
-    btnP.innerHTML  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="white" id="mob-icon-pause"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="white" id="mob-icon-play" style="display:none"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-
-    controls.appendChild(btnM);
-    controls.appendChild(btnP);
-
-    /* Lógica mute */
-    btnM.addEventListener('click', () => {
-      if (vid.muted) {
-        vid.muted = false;
-        vid.volume = 0.7;
-        hint.classList.add('hidden');
-        btnM.querySelector('#mob-icon-mute').style.display  = 'none';
-        btnM.querySelector('#mob-icon-sound').style.display = '';
-      } else {
-        vid.muted = true;
-        btnM.querySelector('#mob-icon-mute').style.display  = '';
-        btnM.querySelector('#mob-icon-sound').style.display = 'none';
-      }
-    });
-
-    /* Lógica pause — toque no botão */
-    btnP.addEventListener('click', () => {
-      if (vid.paused) {
-        vid.play();
-        btnP.querySelector('#mob-icon-pause').style.display = '';
-        btnP.querySelector('#mob-icon-play').style.display  = 'none';
-      } else {
-        vid.pause();
-        btnP.querySelector('#mob-icon-pause').style.display = 'none';
-        btnP.querySelector('#mob-icon-play').style.display  = '';
-      }
-    });
-
-    /* Toque direto no vídeo também ativa o som (primeira vez) */
-    vid.addEventListener('click', () => {
-      if (vid.muted) {
-        vid.muted = false;
-        vid.volume = 0.7;
-        hint.classList.add('hidden');
-        btnM.querySelector('#mob-icon-mute').style.display  = 'none';
-        btnM.querySelector('#mob-icon-sound').style.display = '';
-      }
-    });
-
-    wrap.appendChild(vid);
-    wrap.appendChild(hint);
-    wrap.appendChild(controls);
-    mobileSlot.appendChild(wrap);
-
-    vid.play().catch(() => {});
-  }
-
-  buildMobileVideo();
-  window.addEventListener('resize', buildMobileVideo);
-
-
-
-  /* ── Muta vídeos ao sair do viewport ── */
-  const allVideoWrappers = [
-    { el: document.getElementById('hero-video-col'),        getVid: () => desktopVideo },
-    { el: document.getElementById('hero-video-mobile-slot'), getVid: () => mobileSlot?.querySelector('video') },
-  ];
-
-  allVideoWrappers.forEach(({ el, getVid }) => {
-    if (!el) return;
-    const vpObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const vid = getVid();
-        if (!vid) return;
-        if (!entry.isIntersecting) {
-          vid._mutedByScroll = !vid.muted; // salva se estava com som
-          vid.muted = true;
-        } else {
-          if (vid._mutedByScroll) {
-            vid.muted = false; // restaura som se tinha antes
-            vid._mutedByScroll = false;
-          }
+  /* Pausa o player fora da viewport e retoma somente se ele estava tocando. */
+  const heroVideoWrapper = document.getElementById('hero-video-col');
+  if (heroVideo && heroVideoWrapper) {
+    const videoObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (heroVideo.dataset.resume === 'true') {
+          heroVideo.play().catch(() => {});
+          heroVideo.dataset.resume = 'false';
         }
-      });
+        return;
+      }
+
+      heroVideo.dataset.resume = String(!heroVideo.paused);
+      heroVideo.pause();
+      setDesktopPlayIcon(false);
     }, { threshold: 0.1 });
-    vpObserver.observe(el);
-  });
+    videoObserver.observe(heroVideoWrapper);
+  }
 
   
 
@@ -201,13 +85,43 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ── Envio do Formulário + Timer de 2.5s e Animação de Carregamento ── */
 const leadForm = document.getElementById('lead-form');
 const formFeedback = document.getElementById('form-feedback');
+const formError = document.getElementById('form-error');
 
 if (leadForm) {
+  const submitBtn = document.getElementById('submit-btn');
+  const originalBtnText = submitBtn ? submitBtn.innerText : '';
+
+  function showFormError(message) {
+    if (!formError) return;
+    formError.textContent = message;
+    formError.classList.remove('hidden');
+    formError.focus();
+  }
+
+  function clearFormError() {
+    if (!formError) return;
+    formError.textContent = '';
+    formError.classList.add('hidden');
+  }
+
+  leadForm.querySelectorAll('input, select, textarea').forEach(field => {
+    field.addEventListener('invalid', () => field.setAttribute('aria-invalid', 'true'));
+    field.addEventListener('input', () => {
+      field.setAttribute('aria-invalid', String(!field.validity.valid));
+      if (field.validity.valid) clearFormError();
+    });
+  });
+
   leadForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    const submitBtn = document.getElementById('submit-btn');
-    const originalBtnText = submitBtn ? submitBtn.innerText : '';
+    if (!leadForm.checkValidity()) {
+      leadForm.reportValidity();
+      return;
+    }
+
+    clearFormError();
+    leadForm.setAttribute('aria-busy', 'true');
 
     // 1. Ativa estado de carregamento no botão
     if (submitBtn) {
@@ -219,6 +133,8 @@ if (leadForm) {
     const formData = new FormData(leadForm);
     const data = Object.fromEntries(formData.entries());
     const webhookUrl = 'https://hook.us2.make.com/02vrpz1tcsr477ybqpwe98vhhv7dq3ve';
+    const requestController = new AbortController();
+    const requestTimeout = setTimeout(() => requestController.abort(), 15000);
 
     // 2. Timer de delay mínimo de 2.500ms (2,5 segundos)
     const minDelay = new Promise(resolve => setTimeout(resolve, 2500));
@@ -230,6 +146,7 @@ if (leadForm) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
+          signal: requestController.signal,
         }),
         minDelay
       ]);
@@ -239,6 +156,7 @@ if (leadForm) {
         leadForm.classList.add('hidden');
         if (formFeedback) {
           formFeedback.classList.remove('hidden');
+          formFeedback.focus();
         }
         leadForm.reset();
       } else {
@@ -246,7 +164,10 @@ if (leadForm) {
       }
     } catch (error) {
       console.error('Erro de envio:', error);
-      alert('Houve um problema ao enviar seus dados. Por favor, tente novamente ou entre em contato via WhatsApp.');
+      const message = error?.name === 'AbortError'
+        ? 'O envio demorou mais do que o esperado. Verifique sua conexão e tente novamente.'
+        : 'Não foi possível enviar seus dados agora. Tente novamente em instantes.';
+      showFormError(message);
       
       // Restaura o botão em caso de falha para o usuário tentar novamente
       if (submitBtn) {
@@ -255,6 +176,8 @@ if (leadForm) {
         submitBtn.innerText = originalBtnText;
       }
     } finally {
+      clearTimeout(requestTimeout);
+      leadForm.removeAttribute('aria-busy');
       // Garante a remoção da animação se o formulário continuar visível
       if (submitBtn && !submitBtn.disabled) {
         submitBtn.classList.remove('btn-loading');
@@ -291,6 +214,9 @@ if (phoneInput) {
     }
 
     e.target.value = value;
+    const isCompletePhone = value === '' || /^(\([0-9]{2}\) [0-9]{4,5}-[0-9]{4})$/.test(value);
+    e.target.setCustomValidity(isCompletePhone ? '' : 'Informe um telefone válido com DDD.');
+    e.target.setAttribute('aria-invalid', String(!e.target.validity.valid));
   });
 }
 	  
@@ -386,8 +312,14 @@ if (phoneInput) {
     btn.addEventListener('click', () => {
       const item = btn.closest('.faq-item');
       const isOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-      if (!isOpen) item.classList.add('open');
+      document.querySelectorAll('.faq-item').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
     });
   });
 
@@ -404,12 +336,21 @@ if (phoneInput) {
     let timer    = null;
 
     function goTo(index) {
-      slides[current].classList.remove('active');
-      dots[current].classList.remove('active');
       current = (index + slides.length) % slides.length;
-      slides[current].classList.add('active');
-      dots[current].classList.add('active');
+      slides.forEach((slide, slideIndex) => {
+        const isActive = slideIndex === current;
+        slide.classList.toggle('active', isActive);
+        slide.setAttribute('aria-hidden', String(!isActive));
+        if (slide.classList.contains('zoom-trigger')) slide.tabIndex = isActive ? 0 : -1;
+      });
+      dots.forEach((dot, dotIndex) => {
+        const isActive = dotIndex === current;
+        dot.classList.toggle('active', isActive);
+        dot.setAttribute('aria-current', String(isActive));
+      });
     }
+
+    goTo(0);
 
     function startAutoplay() {
       stopAutoplay();
@@ -446,7 +387,6 @@ if (phoneInput) {
   });
 
   /* ── City tabs com slider ── */
-  const tabsContainer = document.querySelector('.city-tabs');
   const slider = document.querySelector('.city-tabs-slider');
 
   function moveSlider(tab) {
@@ -465,18 +405,43 @@ if (phoneInput) {
     });
   }
 
-  document.querySelectorAll('.city-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
+  const cityTabs = Array.from(document.querySelectorAll('.city-tab'));
+
+  function activateCityTab(tab, moveFocus = false) {
       const target = tab.dataset.city;
-      document.querySelectorAll('.city-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.city-panel').forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
+      cityTabs.forEach(t => {
+        const isActive = t === tab;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', String(isActive));
+        t.tabIndex = isActive ? 0 : -1;
+      });
+      document.querySelectorAll('.city-panel').forEach(panel => {
+        const isActive = panel.id === 'city-' + target;
+        panel.classList.toggle('active', isActive);
+        panel.hidden = !isActive;
+      });
       const activePanel = document.getElementById('city-' + target);
-      activePanel.classList.add('active');
       moveSlider(tab);
       /* Inicia autoplay do carrossel da aba recém-ativada */
       const carousel = activePanel.querySelector('[data-carousel]');
       if (carousel) carousel.dispatchEvent(new Event('mouseleave'));
+      if (moveFocus) tab.focus();
+  }
+
+  cityTabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => activateCityTab(tab));
+    tab.addEventListener('keydown', (event) => {
+      const keyToOffset = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+      if (event.key in keyToOffset) {
+        event.preventDefault();
+        activateCityTab(cityTabs[(index + keyToOffset[event.key] + cityTabs.length) % cityTabs.length], true);
+      } else if (event.key === 'Home') {
+        event.preventDefault();
+        activateCityTab(cityTabs[0], true);
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        activateCityTab(cityTabs[cityTabs.length - 1], true);
+      }
     });
   });
 
@@ -727,26 +692,78 @@ window.addEventListener('resize', () => {
   const zoomModal    = document.getElementById('zoom-modal');
   const zoomModalImg = document.getElementById('zoom-modal-img');
   const zoomClose    = document.getElementById('zoom-modal-close');
+  let activeModal = null;
+  let lastFocusedElement = null;
+  const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-  function openZoom(src, alt) {
+  function openModal(modal, trigger) {
+    lastFocusedElement = trigger || document.activeElement;
+    activeModal = modal;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    const initialFocus = modal.querySelector('.aguia-modal-close, .zoom-modal-close') || modal.querySelector(focusableSelector);
+    requestAnimationFrame(() => initialFocus?.focus());
+  }
+
+  function hideModal(modal) {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (activeModal === modal) activeModal = null;
+    if (lastFocusedElement instanceof HTMLElement && lastFocusedElement.isConnected) {
+      lastFocusedElement.focus();
+    }
+    lastFocusedElement = null;
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (!activeModal || event.key !== 'Tab') return;
+    const focusable = Array.from(activeModal.querySelectorAll(focusableSelector));
+    if (!focusable.length) {
+      event.preventDefault();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  function openZoom(src, alt, trigger) {
     if (window.innerWidth < 1024) return; // desktop only
     zoomModalImg.src = src;
     zoomModalImg.alt = alt || 'Imagem ampliada';
-    zoomModal.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    openModal(zoomModal, trigger);
   }
 
   function closeZoom() {
-    zoomModal.classList.remove('open');
-    document.body.style.overflow = '';
+    hideModal(zoomModal);
   }
 
   /* Delegação de eventos — clique nas imagens zoomáveis dentro dos carrosseis das cidades */
   document.querySelectorAll('[data-carousel] .zoom-trigger').forEach(img => {
-    img.addEventListener('click', (e) => {
+    img.tabIndex = img.classList.contains('active') ? 0 : -1;
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-label', `Ampliar imagem: ${img.alt}`);
+
+    function openImageZoom(event) {
       /* Não dispara se o clique veio de dentro dos controles */
-      if (e.target.closest('.carousel-controls')) return;
-      openZoom(img.src, img.alt);
+      if (event.target.closest('.carousel-controls')) return;
+      openZoom(img.src, img.alt, img);
+    }
+
+    img.addEventListener('click', openImageZoom);
+    img.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openImageZoom(event);
+      }
     });
   });
 
@@ -774,9 +791,7 @@ const aguiaClose   = document.getElementById('aguia-modal-close');
 // 1. Função para ABRIR o modal e criar o estado no histórico
 function openAguiaModal(e) {
   if (e) e.preventDefault();
-  
-  aguiaModal.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  openModal(aguiaModal, e?.currentTarget);
 
   // Adiciona o estado temporário no histórico de navegação
   history.pushState({ aguiaModalOpen: true }, '');
@@ -784,8 +799,7 @@ function openAguiaModal(e) {
 
 // 2. Função pura para OCULTAR visualmente o modal da tela
 function hideAguiaModal() {
-  aguiaModal.classList.remove('open');
-  document.body.style.overflow = '';
+  hideModal(aguiaModal);
 }
 
 // 3. Função acionada ao fechar por Botão X, Overlay ou Tecla ESC
