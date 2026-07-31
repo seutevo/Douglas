@@ -130,8 +130,39 @@ if (leadForm) {
       submitBtn.innerText = 'Enviando';
     }
 
+    // ── TRATAMENTO E SANITIZAÇÃO DOS DADOS ──
     const formData = new FormData(leadForm);
     const data = Object.fromEntries(formData.entries());
+
+    // 1. Limpa a máscara do WhatsApp e garante o DDI 55
+    if (data.whatsapp) {
+      // Remove tudo que não for dígito para trabalhar com a string limpa primeiro
+      let onlyNumbers = data.whatsapp.replace(/\D/g, ''); 
+      
+      // Garante que o DDD/Número tenha os 11 dígitos (ou 10 para fixo)
+      if (onlyNumbers.startsWith('55')) {
+        onlyNumbers = onlyNumbers.slice(2); // Remove o 55 temporariamente se já existir
+      }
+
+      // Aplica a formatação internacional aceita pelo Kommo
+      if (onlyNumbers.length === 11) {
+        // Celular: +55 48 98877-5544
+        data.whatsapp = `+55 ${onlyNumbers.slice(0, 2)} ${onlyNumbers.slice(2, 7)}-${onlyNumbers.slice(7)}`;
+      } else if (onlyNumbers.length === 10) {
+        // Telefone Fixo: +55 48 3333-4444
+        data.whatsapp = `+55 ${onlyNumbers.slice(0, 2)} ${onlyNumbers.slice(2, 6)}-${onlyNumbers.slice(6)}`;
+      } else {
+        // Fallback caso venha com tamanho incomum
+        data.whatsapp = `+55 ${onlyNumbers}`;
+      }
+    }
+
+    // 2. PRESERVA AS QUEBRAS DE LINHA (ENTER) PARA O KOMMO
+    if (data.mensagem) {
+      // Converte a quebra de linha real em "\n" seguro para o JSON
+      data.mensagem = data.mensagem.replace(/\r?\n/g, '\\n');
+    }
+
     const webhookUrl = 'https://hook.us2.make.com/02vrpz1tcsr477ybqpwe98vhhv7dq3ve';
     const requestController = new AbortController();
     const requestTimeout = setTimeout(() => requestController.abort(), 15000);
@@ -145,7 +176,7 @@ if (leadForm) {
         fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
+          body: JSON.stringify(data), // Envia o payload limpo
           signal: requestController.signal,
         }),
         minDelay
@@ -184,9 +215,9 @@ if (leadForm) {
       }
     }
   });
-}	
+} 
 
-	  /* Máscara dinâmica para telefone/WhatsApp (DDD + 9 dígitos) */
+/* Máscara dinâmica para telefone/WhatsApp (DDD + 9 dígitos) */
 const phoneInput = document.getElementById('whatsapp');
 
 if (phoneInput) {
@@ -203,7 +234,7 @@ if (phoneInput) {
       // Formato com 11 dígitos: (XX) XXXXX-XXXX
       value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`;
     } else if (value.length > 6) {
-      // Formato intermediário com 10 dígitos (caso receba fixo ou digitando): (XX) XXXX-XXXX
+      // Formato intermediário com 10 dígitos: (XX) XXXX-XXXX
       value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
     } else if (value.length > 2) {
       // Formato apenas com DDD: (XX) XXXX
