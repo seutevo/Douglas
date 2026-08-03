@@ -163,6 +163,19 @@ if (leadForm) {
       data.mensagem = data.mensagem.replace(/\r?\n/g, '\\n');
     }
 
+    // Fallback para Perfil (caso fique vazio)
+    if (!data.perfil || data.perfil.trim() === '') {
+      data.perfil = 'R$ 500 mil – R$ 1,5 Mi';
+    }
+
+    // Fallback para Mensagem (caso fique vazia)
+    if (!data.mensagem || data.mensagem.trim() === '') {
+      data.mensagem = 'Sem mensagem enviada.';
+    } else {
+      // Preserva as quebras de linha se houver mensagem
+      data.mensagem = data.mensagem.replace(/\r?\n/g, '\\n');
+    }
+
     const webhookUrl = 'https://hook.us2.make.com/02vrpz1tcsr477ybqpwe98vhhv7dq3ve';
     const requestController = new AbortController();
     const requestTimeout = setTimeout(() => requestController.abort(), 15000);
