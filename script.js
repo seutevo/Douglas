@@ -827,6 +827,111 @@ window.addEventListener('resize', () => {
     if (e.key === 'Escape' && zoomModal.classList.contains('open')) closeZoom();
   });
 
+
+  /* ── Modal Política de Privacidade ── */
+  (function() {
+    const overlay  = document.getElementById('privacy-modal');
+    const sheet    = document.getElementById('privacy-sheet');
+    const body     = document.getElementById('privacy-body');
+    const closeBtn = document.getElementById('privacy-close');
+    const triggers = document.querySelectorAll('.privacy-trigger');
+    if (!overlay) return;
+
+    function openPrivacy(e) {
+      if (e) e.preventDefault();
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      body.scrollTop = 0;
+      history.pushState({ privacy: true }, '');
+    }
+
+    function closePrivacy() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    triggers.forEach(t => t.addEventListener('click', openPrivacy));
+    if (closeBtn) closeBtn.addEventListener('click', closePrivacy);
+
+    /* Fecha ao clicar no overlay */
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closePrivacy();
+    });
+
+    /* Fecha com ESC */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) closePrivacy();
+    });
+
+    /* Botão voltar do browser */
+    window.addEventListener('popstate', (e) => {
+      if (overlay.classList.contains('open')) closePrivacy();
+    });
+
+    /* ── Drag to dismiss — mobile bottom sheet ── */
+    let dragStartY   = 0;
+    let currentY     = 0;
+    let isDragging   = false;
+    const DISMISS_THRESHOLD = 120;
+
+    function onSheetDragStart(clientY) {
+      if (window.innerWidth > 767) return;
+      dragStartY = clientY;
+      currentY   = 0;
+      isDragging = true;
+      sheet.style.transition = 'none';
+    }
+
+    function onSheetDragMove(clientY) {
+      if (!isDragging) return;
+      const dy = clientY - dragStartY;
+      if (dy < 0) return; /* não permite arrastar para cima */
+      currentY = dy;
+      sheet.style.transform = `translateY(${dy}px)`;
+    }
+
+    function onSheetDragEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      sheet.style.transition = '';
+
+      if (currentY > DISMISS_THRESHOLD) {
+        /* Fecha com animação */
+        sheet.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+          sheet.style.transform = '';
+          closePrivacy();
+        }, 350);
+      } else {
+        /* Snap back */
+        sheet.style.transform = '';
+      }
+    }
+
+    /* Touch no header — drag handle */
+    const handle = document.getElementById('privacy-drag-handle');
+    if (handle) {
+      handle.addEventListener('touchstart', (e) => {
+        onSheetDragStart(e.touches[0].clientY);
+      }, { passive: true });
+    }
+
+    /* Touch no header inteiro também dispara drag */
+    const header = sheet.querySelector('.privacy-header');
+    if (header) {
+      header.addEventListener('touchstart', (e) => {
+        onSheetDragStart(e.touches[0].clientY);
+      }, { passive: true });
+    }
+
+    window.addEventListener('touchmove', (e) => {
+      if (isDragging) onSheetDragMove(e.touches[0].clientY);
+    }, { passive: true });
+
+    window.addEventListener('touchend', onSheetDragEnd, { passive: true });
+
+  })();
+
   /* ── Modal Águia Consultoria ── */
 const aguiaModal   = document.getElementById('aguia-modal');
 const aguiaTrigger = document.getElementById('aguia-modal-trigger');

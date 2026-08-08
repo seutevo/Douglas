@@ -277,7 +277,7 @@ nav a:hover { color: var(--foreground); }
     background-color 0.5s ease, 
     box-shadow 0.5s ease, 
     opacity 0.35s ease, 
-    transform 0.35s ease; 
+    transform 0.35s ease;
 }
 
 @media (min-width: 640px) { .btn-cta { width: auto; } }
@@ -405,6 +405,12 @@ nav a:hover { color: var(--foreground); }
   letter-spacing: 0.16em;
   color: color-mix(in oklab, var(--foreground) 60%, transparent);
 }
+
+@media (max-width: 382px) {.trust-label {
+  font-size: 0.76rem;
+  letter-spacing: 0.11em; } 
+}
+
 
 /* ============================================================
    PILLARS
@@ -739,9 +745,11 @@ nav a:hover { color: var(--foreground); }
 .btn-cta-full:hover {
   box-shadow: 0 12px 8px -12px color-mix(in oklab, var(--brand-soft) 55%, transparent);
   background-color: color-mix(in oklab, var(--cta) 95%, black);
-  
-  /* REMOVIDO: A linha de transição daqui foi apagada */
+    
 }
+
+@media (max-width: 382px) { .btn-cta-full { letter-spacing: 0.11em;
+	} }
 
 
 /* ============================================================
@@ -790,7 +798,7 @@ nav a:hover { color: var(--foreground); }
 @media (min-width: 1024px) {
   .consultant-inner { grid-template-columns: repeat(12, 1fr); align-items: center; }
   .consultant-img-col { grid-column: span 5; }
-  .consultant-content { grid-column: span 7; padding-left: 1.5rem; }
+  .consultant-content { grid-column: span 7; padding-left: 2rem; }
 }
 
 .consultant-img-wrap {
@@ -826,7 +834,7 @@ nav a:hover { color: var(--foreground); }
 
 .consultant-content p {
 	margin-top: 0.65rem;
-	font-size: 1rem;
+	font-size: 0.95rem;
 	line-height: 1.75;
 	color: color-mix(in oklab, var(--foreground) 70%, transparent);
 }
@@ -837,10 +845,16 @@ nav a:hover { color: var(--foreground); }
   border-top: 1px solid var(--border);
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
-  gap: 2rem;
+  justify-content:flex-start;
+  gap: 4.2rem;
   max-width: 28rem;
 }
+
+@media (max-width: 382px) {.consultant-meta {
+  display: grid;
+  gap: 2rem; } 
+}
+
 
 .consultant-creci {
   font-family: var(--font-display);
@@ -861,13 +875,12 @@ nav a:hover { color: var(--foreground); }
 .btn-text-link {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: var(--cta);
+  color: var(--brand);
   transition: gap 0.15s;
 }
 
@@ -1371,8 +1384,12 @@ footer {
 }
 
 .footer-links {
-  display: grid;
-  gap: 2rem;
+  display: inline-flex;
+  gap: 2rem 4rem;
+  grid-auto-flow: row;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 @media (min-width: 640px) { .footer-links { grid-template-columns: repeat(3, 1fr); } }
@@ -1533,14 +1550,6 @@ svg { display: inline-block; vertical-align: middle; }
   flex: 1;
 }
 
-.cookie-link {
-  color: var(--brand);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  transition: color 0.15s;
-}
-
-.cookie-link:hover { color: var(--brand-soft); }
 
 .cookie-actions {
   display: flex;
@@ -2262,4 +2271,269 @@ svg { display: inline-block; vertical-align: middle; }
 
 .zoom-modal-close:hover {
   background: rgba(255, 255, 255, 0.28);
+}
+
+/* ============================================================
+   BOTÃO WHATSAPP FLUTUANTE
+   ============================================================ */
+
+.whatsapp-btn {
+  position: fixed;
+  bottom: 1.75rem;
+  right: 1.75rem;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  background-color: #25d366;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.45);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.whatsapp-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(37, 211, 102, 0.6);
+}
+
+.whatsapp-btn:active {
+  transform: scale(0.95);
+}
+
+/* Ondas de pulso */
+.whatsapp-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background-color: #25d366;
+  opacity: 0.5;
+  animation: whatsapp-pulse 2.2s ease-out infinite;
+}
+
+.whatsapp-pulse--delay {
+  animation-delay: 1.1s;
+}
+
+@keyframes whatsapp-pulse {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  70%  { transform: scale(1.7); opacity: 0; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+.whatsapp-icon {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+/* Afasta do cookie banner quando ele está visível */
+.cookie-banner:not(.hidden) ~ * .whatsapp-btn,
+body:has(.cookie-banner:not(.hidden)) .whatsapp-btn {
+  bottom: 6rem;
+  transition: bottom 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ============================================================
+   MODAL — POLÍTICA DE PRIVACIDADE
+   ============================================================ */
+
+/* Overlay */
+.privacy-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(14, 27, 44, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.privacy-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Sheet — desktop: modal centralizado */
+.privacy-sheet {
+  background: var(--background);
+  width: 100%;
+  max-width: 46vw;
+  max-height: 85vh;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 32px 80px -16px rgba(14, 27, 44, 0.4);
+  transform: translateY(24px) scale(0.97);
+  opacity: 0;
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.2, 0.64, 1),
+    opacity 0.35s ease;
+}
+
+.privacy-overlay.open .privacy-sheet {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Mobile — bottom sheet */
+@media (max-width: 767px) {
+  .privacy-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .privacy-sheet {
+    max-width: 100%;
+    max-height: calc(100vh - 4rem); /* encosta no header */
+    width: 100%;
+    border-radius: 1.25rem 1.25rem 0 0;
+    transform: translateY(100%);
+  }
+
+  .privacy-overlay.open .privacy-sheet {
+    transform: translateY(0);
+  }
+}
+
+/* Header fixo */
+.privacy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem;
+  border-bottom: 2px solid color-mix(in oklab, var(--cta) 75%, transparent);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Drag handle — mobile only */
+.privacy-drag-handle {
+  display: none;
+  position: absolute;
+  top: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.5rem;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+@media (max-width: 767px) {
+  .privacy-drag-handle { display: block; }
+  .privacy-header { padding-top: 1.75rem; }
+}
+
+.privacy-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.privacy-close {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  color: var(--ink);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.privacy-close:hover {
+  background: color-mix(in oklab, var(--foreground) 15%, transparent);
+}
+
+/* Body com scroll */
+.privacy-body {
+  overflow-y: auto;
+  padding: 1.75rem 1.5rem 2.5rem;
+  flex: 1;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollbar discreta */
+.privacy-body::-webkit-scrollbar { width: 4px; }
+.privacy-body::-webkit-scrollbar-track { background: transparent; }
+.privacy-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.privacy-updated {
+  font-size: 0.75rem;
+  color: color-mix(in oklab, var(--foreground) 72%, transparent);
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px dotted var(--border);
+}
+
+.privacy-section {
+  margin-bottom: 2rem;
+}
+
+.privacy-section h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.privacy-section p {
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: color-mix(in oklab, var(--foreground) 75%, transparent);
+  margin-bottom: 0.75rem;
+}
+
+.privacy-section p:last-child { margin-bottom: 0; }
+
+.privacy-section ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-left: 0;
+  border-left: 1px dashed color-mix(in oklab, var(--cta) 70%, transparent);
+}
+
+.privacy-section ul li {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: color-mix(in oklab, var(--foreground) 75%, transparent);
+  padding-left: 1rem;
+  
+}
+
+/* Link da política no footer */
+.privacy-trigger {
+  color: var(--brand);
+  text-decoration: none;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.privacy-trigger:hover {
+  color: var(--brand-soft);
+  text-decoration: underline;
 }
